@@ -1,3 +1,5 @@
 exp/
 pre/
 build/
+.DS_Store
+shared/
