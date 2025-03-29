@@ -4,7 +4,7 @@ ARG ROLE
 
 # 安装基础工具和 SSH 服务
 RUN apt update -qq && \
-    apt install -y openssh-server sudo vim gcc g++ rpcbind && \
+    apt install -y openssh-server sudo vim build-essential gcc g++ gfortran libtool automake autoconf wget screen rpcbind && \
     mkdir -p /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
