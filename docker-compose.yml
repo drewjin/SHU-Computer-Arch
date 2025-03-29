@@ -1,0 +1,43 @@
+services:
+  master:
+    build: .  # 使用当前目录的 Dockerfile
+    container_name: master
+    hostname: master
+    environment:
+      - ROOT_PASSWORD=123456  # 覆盖镜像中的默认密码
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.10
+    ports:
+      - "2222:22"
+
+  slave01:
+    build: .
+    container_name: slave01
+    hostname: slave01
+    environment:
+      - ROOT_PASSWORD=123456
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.11
+    ports:
+      - "2223:22"
+
+  slave02:
+    build: .
+    container_name: slave02
+    hostname: slave02
+    environment:
+      - ROOT_PASSWORD=123456
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.12
+    ports:
+      - "2224:22"
+
+networks:
+  drew_inner_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
