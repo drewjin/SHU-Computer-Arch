@@ -1,10 +1,13 @@
 services:
   master:
-    build: .
+    build: 
+      context: .
+      args:
+        - ROLE=server
     container_name: master
     hostname: master
     environment:
-      - ROOT_PASSWORD=123456  # 覆盖镜像中的默认密码
+      - ROOT_PASSWORD=123456 
     volumes:
       - ./shared:/shared
     networks:
@@ -12,9 +15,13 @@ services:
         ipv4_address: 192.168.1.10
     ports:
       - "2222:22"
+    privileged: true
 
   slave01:
-    build: .
+    build: 
+      context: .
+      args:
+        - ROLE=server
     container_name: slave01
     hostname: slave01
     environment:
@@ -26,9 +33,13 @@ services:
         ipv4_address: 192.168.1.11
     ports:
       - "2223:22"
+    privileged: true
 
   slave02:
-    build: .
+    build: 
+      context: .
+      args:
+        - ROLE=server
     container_name: slave02
     hostname: slave02
     environment:
@@ -40,6 +51,7 @@ services:
         ipv4_address: 192.168.1.12
     ports:
       - "2224:22"
+    privileged: true
 
 networks:
   drew_inner_network:
