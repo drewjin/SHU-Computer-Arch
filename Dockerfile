@@ -4,7 +4,7 @@ ARG ROLE
 
 # 安装基础工具和 SSH 服务
 RUN apt update -qq && \
-    apt install -y openssh-server sudo vim build-essential gcc g++ gfortran libtool automake autoconf wget screen rpcbind && \
+    apt install -y openssh-server sudo vim build-essential gcc g++ gfortran libtool automake autoconf wget screen cmake rpcbind cmake git && \
     mkdir -p /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
@@ -28,6 +28,19 @@ RUN mkdir -p /root/.ssh && \
     echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM8M9N9lnkaXqkrYI0/RGpstU/myvcvOmd0EPGzJme7i drew@drews-Laptop.local" >> /root/.ssh/authorized_keys && \
     chmod 600 /root/.ssh/authorized_keys && \
     chmod 700 /root/.ssh
+
+# 编译 MPICH
+RUN mkdir -p /shared/opt/mpich-"$ROLE"; \
+    cd /shared/nfs/mpich-3.4; \
+    export FFLAGS="-fallow-argument-mismatch"; \
+    export FCFLAGS="-fallow-argument-mismatch"; \
+    ./configure --prefix=/shared/opt/mpich-"$ROLE" --with-device=ch4:ofi 2>&1 | tee configure.log; \
+    make install -j16 2>&1 | tee make.log; \
+    echo "export MPICH=/shared/opt/mpich-$ROLE" >> /root/.bashrc; \
+    echo "export PATH=$MPICH/bin:$PATH" >> /root/.bashrc; \
+    echo "export INCLUDE=$MPICH/include:$INCLUDE" >> /root/.bashrc; \
+    echo "export LD_LIBRARY_PATH=$MPICH/lib:$LD_LIBRARY_PATH" >> /root/.bashrc; \
+    source /root/.bashrc; 
 
 # 复制启动脚本
 COPY --chmod=755 entrypoint.sh /entrypoint.sh

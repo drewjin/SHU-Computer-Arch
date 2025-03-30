@@ -211,7 +211,7 @@ build_mpich.sh  config_nfs.sh  mpich-3.4  mpich-3.4.tar.gz  nfs-up.sh
 cd mpich-3.4
 export FFLAGS="-fallow-argument-mismatch"
 export FCFLAGS="-fallow-argument-mismatch"
-./configure --prefix=/opt/mpich-3.4 --with-device=ch4:ofi 2>&1 | tee configure.log
+./configure --prefix=/shared/opt/mpich-3.4 --with-device=ch4:ofi 2>&1 | tee configure.log
 make install -j16 2>&1 | tee make.log
 ```
 

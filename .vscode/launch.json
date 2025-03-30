@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/drew/Documents/S3/Arch/SHU-Computer-Arch/shared/experiments/exp1",
+      "program": "/Users/drew/Documents/S3/Arch/SHU-Computer-Arch/shared/experiments/exp1/build/Debug/outDebug"
+    }
+  ]
+}
