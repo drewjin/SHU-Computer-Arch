@@ -186,7 +186,7 @@ tail -f /dev/null
 
 master中：
 
-```
+```bash
 root@master:/shared# ls
 nfs  ssh-auth
 
@@ -196,7 +196,7 @@ build_mpich.sh  config_nfs.sh  mpich-3.4  mpich-3.4.tar.gz  nfs-up.sh
 
 slave01中：
 
-```
+```bash
 root@slave01:~# ls /mnt/nfs/
 build_mpich.sh  config_nfs.sh  mpich-3.4  mpich-3.4.tar.gz  nfs-up.sh
 ```
@@ -215,7 +215,7 @@ export FCFLAGS="-fallow-argument-mismatch"
 make install -j16 2>&1 | tee make.log
 ```
 
-
+随后再.bashrc里添加以下内容，并source一下。
 
 ```bash 
 export MPICH=/opt/mpich-3.4
@@ -224,10 +224,13 @@ export INCLUDE=$MPICH/include:$INCLUDE
 export LD_LIBRARY_PATH=$MPICH/lib:$LD_LIBRARY_PATH
 ```
 
+运行一下例子，看看结果。
+
 ```bash
 cd examples
 mpirun -np 16 ./cpi
 ```
+结果如下：
 
 ```bash
 Process 0 of 16 is on master
@@ -250,11 +253,15 @@ pi is approximately 3.1415926544231274, Error is 0.0000000008333343
 wall clock time = 0.109336
 ```
 
+配置一下分布式文件，我命名为host.lis，分别指定主机名及对应进程数。
+
 ```
 master:8
 slave01:4
 slave02:4
 ```
+
+运行一下，看看结果。
 
 ```bash
 root@master:/shared/nfs# mpirun -machinefile host.list -np 16 mpich-3.4/examples/cpi
