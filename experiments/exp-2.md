@@ -1,4 +1,4 @@
-# NFS + MPICH配置
+# NFS + MPICH配置, MPI样例程序
 
 ## Docker配置
 
@@ -184,6 +184,8 @@ tail -f /dev/null
 
 ## 观察NFS挂载情况
 
+从`docker-compose.yml`可以看出，我做的是一个本地目录挂载容器`/shared`目录，再基于`/shared/nfs`目录共享到节点中的`/mnt/nfs`目录的一个挂载逻辑，这个方便我持久化管理容器数据，并实现nfs系统。
+
 master中：
 
 ```bash
@@ -287,7 +289,24 @@ wall clock time = 0.094107
 
 ## MPICH程序
 
+任务如下：
+
+```
+请编写 C/C++程序：为每个 Country 生成一张 1960-2020 年人均 GDP 的折线图，为每个
+Region 生成一张 1960-2020 年平均人均 GDP 的折线图，为每个 IncomeGroup 生成一张
+1960-2020 年平均人均 GDP 的折线图。比较放在 1 台机器上、多台机器上运行的完成时间，
+计算并行效率和并行加速比。
+```
+
+数据和完整代码放在我的github了[drewjin](https://github.com/drewjin/SHU-Computer-Arch/tree/main/shared/experiments/exp1)
+
 ### 初始化MPI
+
+#### 主函数逻辑
+
+此处我的注释里加了一个多进程debug逻辑，利用vscode attach debug模式进行异步debug，这个我后续开一趴讲，或者大家可以访问[在vs code 中debug mpi 程序](https://zhuanlan.zhihu.com/p/415375524)，基本上学过一点OS，理解一点GDB/LLDB，就能理解这个debug逻辑。（虽然我确实认识那种大三还不会用GDB的）
+
+vscode debug基本流程可以看这个博客[VSCode: Debug C++](https://jamesnulliu.github.io/blogs/vscode-debug-cxx/)，我校一位cpp大佬写的，可以助你充分理解各个json的功能，很多人讲的都是照猫画虎，直接糊上去的，不好用。
 
 ```cpp
 int main(int argc, char* argv[]) {
@@ -311,6 +330,16 @@ int main(int argc, char* argv[]) {
 ### 数据读取与分发
 
 #### 主函数逻辑
+
+这段代码展示了MPI并行程序中**主从模式的数据分发**过程，核心在于通过`MPI_Scatterv`实现非均匀数据划分。主进程（rank 0）首先加载完整的国家数据到`fullData`向量，随后通过三步走策略完成数据分发：
+
+1. **元信息广播**：主进程用`MPI_Bcast`将数据总量`dataSize`同步给所有从进程，确保所有节点对数据规模达成共识。这里特别检查了`dataSize<=0`的异常情况，避免空数据导致后续计算错误。
+
+2. **非均匀分块计算**：通过`chunkSize = dataSize / numProcs`计算基础分块大小，并用`remainder = dataSize % numProcs`处理除不尽的情况。这里采用前`remainder`个进程多分1个数据的策略（`counts[i]++`），实现负载均衡。位移数组`displs`通过累加计算确定每个进程的数据起始位置。
+
+3. **变长分发**：关键操作`MPI_Scatterv`根据`counts`和`displs`数组的描述，将主进程的连续内存数据按`mpiCountryType`定义的结构体格式，精准分发到各进程的`localData`缓冲区。这里每个进程只需准备恰好能容纳分配数据量的`localData`容器（`counts[rank]`指定大小），既节省内存又避免越界。
+
+整个过程体现了MPI程序设计的典型模式——主进程作为数据枢纽负责IO和全局协调，从进程通过通信原语获取计算任务。特别值得注意的是对非整除情况的处理：通过让前N个进程多承担1个数据项（而非集中堆积在某个进程），有效避免了尾部分配不均导致的性能倾斜。这种数据划分策略在后续的并行绘图计算中，能保证各进程工作量基本均衡，充分发挥多节点并行优势。
 
 ```cpp
 int main(int argc, char* argv[]) {
@@ -510,23 +539,385 @@ void ReadGdpData(const std::string& filename,
 }
 ```
 
-```cpp
-int main(int argc, char* argv[]) {
-  ...
-  ...
-}
-```
+### 创建目标文件夹
+
+#### 主函数逻辑
+
+为了方便实验，每次运行程序时，都会先删除之前生成的文件夹，并创建新的文件夹，用于存储生成的图片。同时有个重要的点是，这里需要同步所有进程，因此设置了一个`MPI_Barrier`用于阻塞进程。若不设置，则可能会导致文件夹尚未创建的时候，非主进程外的其他进程会直接开始生成图像，这会导致程序运行出错。
 
 ```cpp
 int main(int argc, char* argv[]) {
   ...
+  if (rank == 0) {
+    const std::string PLOT_DIR = "./plots";
+    ClearDirectory(PLOT_DIR);
+    CreateDirectory(PLOT_DIR);
+    CreateDirectory(PLOT_DIR + "/countries");
+    CreateDirectory(PLOT_DIR + "/region");
+    CreateDirectory(PLOT_DIR + "/income");
+    std::cout << std::format("Start Country Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
+  } 
+  MPI_Barrier(MPI_COMM_WORLD);
   ...
 }
 ```
 
+#### 核心函数头文件
+
+无需多言。
+
+```cpp
+#ifndef UTILS
+#define UTILS
+
+#include <set>
+#include <vector>
+#include <string>
+
+void ClearDirectory(const std::string& path);
+
+void CreateDirectory(const std::string& path);
+
+...
+
+#endif
+```
+
+#### 核心函数实现
+
+主要是兼容不同操作系统的删除和创建文件夹函数，以及一个兼容C++17的`std::filesystem`库的函数。
+
+```cpp
+void ClearDirectory(const std::string& path) {
+#if __cplusplus >= 201703L
+  namespace fs = std::filesystem;
+  try {
+    fs::remove_all(path);  
+  } catch (const fs::filesystem_error& e) {
+    std::cerr << "Error deleting directory: " << e.what() << std::endl;
+  }
+#else
+  ClearDirectoryLegacy(path)
+#endif
+}
+
+void ClearDirectoryLegacy(const std::string& path) {
+#if defined(_WIN32)
+  std::string cmd = "rmdir /s /q \"" + path + "\"";
+  system(cmd.c_str());
+#else
+  std::string cmd = "rm -rf \"" + path + "\"";
+  system(cmd.c_str());
+#endif
+}
+
+void CreateDirectory(const std::string& path) {
+#if defined(_WIN32)
+  mkdir(path.c_str());
+#else
+  mkdir(path.c_str(), 0777);
+#endif
+}
+```
+
+### 生成国家GDP趋势图
+
+#### 主函数逻辑
+
+主要是遍历分发到本地的数据，并调用`matplotlib`库生成图片，由于之前已经做好了分发，因此这里只需要遍历本地数据`localData`即可。
+
 ```cpp
 int main(int argc, char* argv[]) {
   ...
+  for (const auto& country : localData) {
+    std::vector<double> years(61);
+    std::vector<double> gdp(country.gdp, country.gdp + 61);
+    for (int i = 0; i < 61; ++i) years[i] = 1960 + i;
+    plt::plot(years, gdp);
+    plt::title(std::string(country.countryCode) + " GDP per capita");
+    plt::save("./plots/countries/Country_" + std::string(country.countryCode) + ".png");
+    plt::close();
+  }
   ...
 }
 ```
+
+### 地区分组、收入分组平均GDP数据处理
+
+#### 主函数逻辑
+
+主进程首先会遍历所有国家数据，收集所有不同的地区（Region）和收入分组（IncomeGroup）名称。这些信息需要告诉所有其他进程，但由于MPI不能直接传输STL容器，所以需要先把这些字符串集合序列化成字节流。这里用了一个很巧妙的方法：把每个字符串按顺序拼接起来，中间用'\0'分隔，就像C风格字符串数组那样。
+
+序列化完成后，主进程会先广播数据的大小，让所有进程知道要接收多少数据，然后再广播数据本身。这样其他进程收到数据后，就可以反序列化还原出相同的字符串集合。这种分两步广播的方式是MPI编程的常见模式，可以避免接收方不知道要分配多少内存的问题。
+
+接下来，每个进程都会根据自己分配到的那部分国家数据，开始计算各个地区和收入分组的GDP总和。这里用了两个map来存储：一个记录总和，一个记录有效数据点的数量。计算时会跳过那些GDP值太小（<=1e-9）的数据，相当于做了简单的数据清洗。
+
+计算完成后，所有进程会把自己的计算结果汇总到主进程。这里用MPI_Reduce进行归约操作，特别的是主进程使用了MPI_IN_PLACE参数，这样可以直接在原地累加数据，不需要额外的缓冲区。最终，主进程会得到完整的统计结果，可以用来计算平均值或者生成图表。
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  if (rank == 0) {
+    std::cout << std::format("Start Sumarizing Data in {:.2f}s\n", MPI_Wtime() - start_time);
+  }
+
+  std::set<std::string> regions, incomeGroups;
+  if (rank == 0) {
+    for (const auto& c : fullData) {
+      if (strlen(c.region))
+        regions.insert(c.region);
+      if (strlen(c.incomeGroup))
+        incomeGroups.insert(c.incomeGroup);
+    }
+  }
+
+  std::vector<char> regionBuffer, incomeBuffer;
+  int regionBufferSize = 0, incomeBufferSize = 0;
+  if (rank == 0) {
+    regionBuffer = SerializeStringSet(regions);
+    incomeBuffer = SerializeStringSet(incomeGroups);
+    regionBufferSize = regionBuffer.size();
+    incomeBufferSize = incomeBuffer.size();
+  }
+
+  MPI_Bcast(&regionBufferSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&incomeBufferSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  regionBuffer.resize(regionBufferSize);
+  incomeBuffer.resize(incomeBufferSize);
+  MPI_Bcast(regionBuffer.data(), regionBufferSize, MPI_CHAR, 0, MPI_COMM_WORLD);
+  MPI_Bcast(incomeBuffer.data(), incomeBufferSize, MPI_CHAR, 0, MPI_COMM_WORLD);
+  std::set<std::string> allRegions =
+      DeserializeStringSet(regionBuffer.data(), regionBufferSize);
+  std::set<std::string> allIncomeGroups =
+      DeserializeStringSet(incomeBuffer.data(), incomeBufferSize);
+
+  std::map<std::string, std::vector<double>> regionSum, incomeSum;
+  std::map<std::string, std::vector<int>> regionCounts, incomeCounts;
+  for (const auto& r : allRegions) {
+    regionSum[r] = std::vector<double>(61, 0.0);
+    regionCounts[r] = std::vector<int>(61, 0);
+  }
+  for (const auto& ig : allIncomeGroups) {
+    incomeSum[ig] = std::vector<double>(61, 0.0);
+    incomeCounts[ig] = std::vector<int>(61, 0);
+  }
+
+  for (const auto& country : localData) {
+    std::string region = country.region;
+    std::string income = country.incomeGroup;
+    for (int i = 0; i < 61; ++i) {
+      double gdp = country.gdp[i];
+      if (gdp <= 1e-9) continue; 
+      if (allRegions.count(region)) {
+        regionSum[region][i] += gdp;
+        regionCounts[region][i]++;
+      }
+      if (allIncomeGroups.count(income)) {
+        incomeSum[income][i] += gdp;
+        incomeCounts[income][i]++;
+      }
+    }
+  }
+
+  for (const auto& r : allRegions) {
+    MPI_Reduce((rank == 0) ? MPI_IN_PLACE : regionSum[r].data(),
+               regionSum[r].data(), 61, MPI_DOUBLE,
+               MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce((rank == 0) ? MPI_IN_PLACE : regionCounts[r].data(),
+               regionCounts[r].data(), 61, MPI_INT,
+               MPI_SUM, 0, MPI_COMM_WORLD);
+  }
+  for (const auto& ig : allIncomeGroups) {
+    MPI_Reduce((rank == 0) ? MPI_IN_PLACE : incomeSum[ig].data(),
+               incomeSum[ig].data(), 61, MPI_DOUBLE,
+               MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce((rank == 0) ? MPI_IN_PLACE : incomeCounts[ig].data(),
+               incomeCounts[ig].data(), 61, MPI_INT,
+               MPI_SUM, 0, MPI_COMM_WORLD);
+  }
+  ...
+}
+```
+
+#### 核心函数头文件
+
+无需多言。
+
+```cpp
+#ifndef UTILS
+#define UTILS
+
+#include <set>
+#include <vector>
+#include <string>
+
+...
+
+std::vector<char> SerializeStringSet(const std::set<std::string>& s);
+
+std::set<std::string> DeserializeStringSet(const char* buffer, int size);
+
+#endif
+```
+
+#### 缓冲序列化函数实现
+
+SerializeStringSet函数非常简单直接：它遍历字符串集合，把每个字符串的内容按顺序拷贝到缓冲区，然后在每个字符串后面加一个'\0'作为分隔符。这样序列化后的数据就像是一个连续的字符串数组，非常紧凑。
+
+反序列化的DeserializeStringSet函数也很聪明：它从缓冲区的起始位置开始，每次读取一个'\0'结尾的字符串，然后跳过这个字符串和分隔符，继续读取下一个。这种处理方式既高效又可靠，完美还原了原来的字符串集合。
+
+```cpp
+std::vector<char> SerializeStringSet(const std::set<std::string>& s) {
+  std::vector<char> buffer;
+  for (const auto& str : s) {
+    buffer.insert(buffer.end(), str.begin(), str.end());
+    buffer.push_back('\0');
+  }
+  return buffer;
+}
+
+std::set<std::string> DeserializeStringSet(const char* buffer, int size) {
+  std::set<std::string> result;
+  const char* ptr = buffer;
+  while (ptr < buffer + size) {
+    std::string s(ptr);
+    result.insert(s);
+    ptr += s.size() + 1;
+  }
+  return result;
+}
+```
+
+### 地区分组、收入分组的平均GDP趋势图
+
+#### 主函数逻辑
+
+由于此时所有进程的数据需要在主进程中汇总，汇总之后实际需要绘制的图像并不多，因此我们选择在主进程中进行绘制，这样主进程只需要等待所有进程完成汇总，然后就可以直接绘制图像。
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  if (rank == 0) {
+    std::cout << std::format("Start Region Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
+    for (const auto& [region, sum] : regionSum) {
+      const auto& counts = regionCounts[region];
+      std::vector<double> avg(61);
+      for (int i = 0; i < 61; ++i) {
+        avg[i] = (counts[i] > 0) ? sum[i] / counts[i] : 0.0;
+      }
+      std::vector<double> years(61);
+      for (int i = 0; i < 61; ++i) years[i] = 1960 + i;
+      plt::plot(years, avg);
+      plt::title("Region: " + region);
+      plt::save("./plots/region/Region_" + region + ".png");
+      plt::close();
+    }
+    std::cout << std::format("Start Income Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
+    for (const auto& [ig, sum] : incomeSum) {
+      const auto& counts = incomeCounts[ig];
+      std::vector<double> avg(61);
+      for (int i = 0; i < 61; ++i) {
+        avg[i] = (counts[i] > 0) ? sum[i] / counts[i] : 0.0;
+      }
+      std::vector<double> years(61);
+      for (int i = 0; i < 61; ++i) years[i] = 1960 + i;
+      plt::plot(years, avg);
+      plt::title("Income Group: " + ig);
+      plt::save("./plots/income/IncomeGroup_" + ig + ".png");
+      plt::close();
+    }
+  }
+  ...
+}
+```
+
+### 记录运行时间、程序出口
+
+#### 主函数逻辑
+
+此时需要等待所有进程结束，设置一个`MPI_Barrier`，然后记录程序运行时间。随后释放空间，结束MPI进程。
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  MPI_Barrier(MPI_COMM_WORLD);
+  double end_time = MPI_Wtime();
+  if (rank == 0) {
+    double total_time = end_time - start_time;
+    std::cout << "Total time: " << total_time << " seconds\n";
+  }
+
+  MPI_Type_free(&mpiCountryType);
+  MPI_Finalize();
+  return 0;
+}
+```
+
+### 实验
+
+#### 编译程序
+
+```bash
+cd /shared/experiments/exp1
+mkdir -p build && cd build && rm -rf *
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+make -j
+```
+
+#### 分布式映射
+
+```bash
+master:2
+slave01:1
+slave02:1
+```
+
+#### 运行程序
+
+##### 单节点单进程基本测试
+
+```bash
+mpirun -n 1 build/gdp_analysis 
+```
+
+##### 单节点多进程测试
+
+```bash
+mpirun -n 5 build/gdp_analysis 
+```
+
+##### 多节点多进程测试
+
+```bash
+mpirun -machinefile configs/dist-5.list -np 5 build/gdp_analysis
+```
+
+#### 实验结果
+
+```bash
+# 单节点单进程测试
+Loaded 265 countries
+Start Country Plotting in 0.04s
+Start Sumarizing Data in 8.77s
+Start Region Plotting in 8.78s
+Start Income Plotting in 9.01s
+Total time: 9.13488 seconds
+
+# 单节点多进程测试
+Loaded 265 countries
+Start Country Plotting in 0.09s
+Start Sumarizing Data in 2.76s
+Start Region Plotting in 2.85s
+Start Income Plotting in 3.32s
+Total time: 3.48248 seconds
+
+# 多节点多进程测试
+Loaded 265 countries
+Start Country Plotting in 0.08s
+Start Sumarizing Data in 2.66s
+Start Region Plotting in 2.73s
+Start Income Plotting in 3.03s
+Total time: 3.17148 seconds
+```
+
+可以看到还是有一定加速比的。
