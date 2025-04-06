@@ -2,4 +2,8 @@ exp-doc/
 pre/
 build/
 .DS_Store
-shared/
+shared/*
+!shared/experiments
+.dep/
+plots/
+matplotlib-cpp/

@@ -1,0 +1,1 @@
+mpirun -n 5 build/gdp_analysis 
