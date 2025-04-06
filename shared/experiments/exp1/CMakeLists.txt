@@ -26,6 +26,7 @@ add_executable(gdp_analysis
   src/utils.cpp
 )
 
+
 # 包含头文件目录
 target_include_directories(gdp_analysis PRIVATE
   ${MPI_CXX_INCLUDE_PATH}

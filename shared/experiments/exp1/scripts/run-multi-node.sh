@@ -1,1 +1,1 @@
-mpirun -machinefile configs/dist.list -np 5 build/gdp_analysis 
+mpirun -machinefile configs/dist-5.list -np 5 build/gdp_analysis 

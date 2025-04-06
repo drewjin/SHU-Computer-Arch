@@ -253,7 +253,7 @@ pi is approximately 3.1415926544231274, Error is 0.0000000008333343
 wall clock time = 0.109336
 ```
 
-配置一下分布式文件，我命名为host.lis，分别指定主机名及对应进程数。
+配置一下分布式文件，我命名为host.list，分别指定主机名及对应进程数。
 
 ```
 master:8
@@ -283,4 +283,250 @@ Process 14 of 16 is on slave02
 Process 4 of 16 is on master
 pi is approximately 3.1415926544231274, Error is 0.0000000008333343
 wall clock time = 0.094107
+```
+
+## MPICH程序
+
+### 初始化MPI
+
+```cpp
+int main(int argc, char* argv[]) {
+  // For debug
+  // {
+  //   int i = 0;
+  //   std::cout << "Waiting for debugger to detach\n";
+  //   while (0 == i) sleep(5);
+  // }
+
+  // Init MPI
+  int rank, numProcs;
+  // MPI_Init(&argc, &argv);
+  MPI_Init(NULL, NULL);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+  ...
+}
+```
+
+### 数据读取与分发
+
+#### 主函数逻辑
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  // Init variables
+  auto mpiCountryType = CreateCountryMpiData();
+  auto start_time = MPI_Wtime();
+  std::vector<CountryData> fullData;
+  size_t dataSize;
+
+  // Host load data
+  if (rank == 0) {
+    const std::string META_DATA_FILE = "data/meta-data.csv";
+    const std::string GDP_DATA_FILE = "data/gdp-data.csv";
+    fullData = ReadMetaData(META_DATA_FILE);
+    ReadGdpData(GDP_DATA_FILE, fullData);
+    dataSize = fullData.size();
+    std::cout << std::format("Loaded {} countries\n", fullData.size());
+  }
+
+  MPI_Bcast(&dataSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if (dataSize <= 0) {
+    if (rank == 0) {
+      std::cerr << "Error: No valid data loaded\n";
+    }
+    MPI_Finalize();
+    return 1;
+  }
+
+  int chunkSize = dataSize / numProcs;
+  int remainder = dataSize % numProcs;
+  std::vector<int> counts(numProcs, chunkSize);
+  std::vector<int> displs(numProcs, 0);
+
+  for (int i = 0; i < remainder; ++i) {
+    counts[i]++;
+  }
+
+  for (int i = 1; i < numProcs; ++i) {
+    displs[i] = displs[i - 1] + counts[i - 1];
+  }
+
+  std::vector<CountryData> localData(counts[rank]);
+
+  MPI_Scatterv(fullData.data(), counts.data(), displs.data(), mpiCountryType,
+               localData.data(), counts[rank], mpiCountryType, 0,
+               MPI_COMM_WORLD);
+  ...
+}
+```
+
+#### 核心函数头文件
+
+头文件中包含了基本的数据结构定义，关键在于CountryData结构体构造，其中不能使用STL容器。
+
+其余要点包括总年数，起始年份，以及核心函数声明。
+
+```cpp
+// parse_data.h
+#ifndef PARSE_DATA
+#define PARSE_DATA
+
+#include <cstdio>
+#include <vector>
+#include <string>
+
+#include "mpi.h"
+
+const size_t NUM_YEARS = 61;
+const size_t START_YEAR = 1960;
+
+struct CountryData {
+  char countryCode[256];
+  char countryName[256];
+  char region[256];
+  char incomeGroup[256];
+  double gdp[NUM_YEARS];
+
+  void PrintCountryData();
+};
+
+MPI_Datatype CreateCountryMpiData();
+
+std::vector<CountryData> ReadMetaData(const std::string& filename);
+
+void ReadGdpData(const std::string& filename, std::vector<CountryData>& countries);
+
+#endif
+```
+
+#### 核心函数实现
+
+##### 数据打印函数，用于Debug和测试
+
+该函数逻辑无需多言。
+
+```cpp
+void CountryData::PrintCountryData() {
+  std::cout << std::format(
+      "Country Code: {}\nName: {}\nRegion: {}\nIncome Group: {}\n",
+      countryCode, countryName, region, incomeGroup)
+      << "GDP: [";
+  for (int i = 0; i < 61; i++) {
+    std::cout << gdp[i];
+  }
+  std::cout << "]\n\n";
+}
+```
+
+##### 创建MPI数据类型
+
+在MPI中传递自定义数据类型的关键在于**精确计算每个字段的内存偏移量**。这里使用的地址计算逻辑非常经典，我们通过`MPI_Get_address`获取结构体基地址和各字段的绝对地址，再通过相对偏移量（displacement）的转换，最终构建出能正确描述内存布局的MPI数据类型。
+
+让我们拆解这段代码的核心细节：首先创建一个临时结构体实例`dummy`，通过`MPI_Get_address(&dummy, &base_address)`获取结构体起始地址作为基准。接着分别获取四个字段的绝对地址——注意`countryCode`、`countryName`、`region`、`incomeGroup`这三个字符串缓冲区虽然声明为定长char数组，但它们的地址在内存中不一定是连续的，而`gdp`数组作为double类型有独立的内存对齐要求。
+
+关键的位移计算发生在`displacements[i] = displacements[i] - base_address`这一步。这个减法操作将绝对地址转换为相对于结构体起始地址的偏移量，这种相对偏移正是MPI跨节点传输时重建内存布局所需的元信息。比如当结构体被序列化传输到其他进程时，接收方只需要按照这些偏移量就能准确地将数据还原到对应字段。
+
+这里有个精妙的设计考量：我们故意使用`blocklengths`数组指定每个字段的连续元素数量。比如三个字符串字段都声明为256字节，实际上构成了三个独立的字符数组块，而`gdp`字段的61个double元素则作为连续内存块处理。这种设计既保留了C风格数组的确定性，又通过MPI的类型映射机制实现了跨平台的数据布局一致性。
+
+最后通过`MPI_Type_create_struct`将字段长度、偏移量和基础类型绑定，生成的`mpiCountryType`就像是一份内存布局说明书。当调用`MPI_Send`或`MPI_Scatterv`时，MPI运行时根据这个类型描述符，自动处理可能存在的内存对齐差异和字节序问题，确保不同架构的节点都能正确解析数据。这种显式类型定义虽然繁琐，但正是MPI能胜任高性能计算的关键——它把数据布局的控制权完全交给程序员，避免了任何隐式的内存假设。
+
+```cpp
+MPI_Datatype CreateCountryMpiData() {
+  int blocklengths[5] = {256, 256, 256, 256, 61};
+  MPI_Datatype types[5] = {MPI_CHAR, MPI_CHAR, MPI_CHAR, MPI_CHAR, MPI_DOUBLE};
+  MPI_Aint displacements[5];
+
+  CountryData dummy;
+  MPI_Aint base_address;
+  MPI_Get_address(&dummy, &base_address);
+  MPI_Get_address(&dummy.countryCode, &displacements[0]);
+  MPI_Get_address(&dummy.countryName, &displacements[1]);
+  MPI_Get_address(&dummy.region, &displacements[2]);
+  MPI_Get_address(&dummy.incomeGroup, &displacements[3]);
+  MPI_Get_address(&dummy.gdp, &displacements[4]);
+
+  for (int i = 0; i < 5; i++) {
+    displacements[i] = displacements[i] - base_address;
+  }
+
+  MPI_Datatype mpiCountryType;
+  MPI_Type_create_struct(5, blocklengths, displacements, types,
+                         &mpiCountryType);
+  MPI_Type_commit(&mpiCountryType);
+  return mpiCountryType;
+}
+```
+
+##### 数据读取函数
+
+这里用`csv-parser`库实现了CSV数据到结构体的高效映射，核心在于**双层数据关联**和**预计算优化**。首先`ReadMetaData`将基础信息按列名直接填充到`CountryData`结构体，三个字符串字段通过`strncpy`确保不越界；接着`ReadGdpData`通过哈希表建立国家代码到结构体指针的快速索引，并预生成年份列名字符串避免循环内重复计算。特别值得注意的是GDP数据的空值处理逻辑——当CSV单元格为空时自动转为0.0。整个过程通过`csv::CSVReader`的行迭代器实现零拷贝数据访问，而哈希表查找使GDP数据匹配的时间复杂度降为O(1)，整体设计在内存安全和性能之间取得了精妙平衡。
+
+```cpp
+std::vector<CountryData> ReadMetaData(const std::string& filename) {
+  std::vector<CountryData> countries;
+  csv::CSVReader reader(filename);
+  auto names = reader.get_col_names();
+  for (auto row : reader) {
+    CountryData tempCountry;
+    // "Country Code","Region","IncomeGroup","SpecialNotes","TableName"
+    strncpy(tempCountry.countryCode, row["Country Code"].get<>().c_str(), 255);
+    strncpy(tempCountry.countryName, row["TableName"].get<>().c_str(), 255);
+    strncpy(tempCountry.region, row["Region"].get<>().c_str(), 255);
+    strncpy(tempCountry.incomeGroup, row["IncomeGroup"].get<>().c_str(), 255);
+    countries.push_back(tempCountry);
+  }
+  return countries;
+}
+
+void ReadGdpData(const std::string& filename,
+                 std::vector<CountryData>& countries) {
+  std::unordered_map<std::string, CountryData*> gdpMap;
+  for (auto& c : countries) {
+    gdpMap[c.countryCode] = &c;
+  }
+
+  // Pre-compute the required year strings once
+  std::vector<std::string> yearFields;
+  for (size_t i = 0; i < NUM_YEARS; ++i) {
+    yearFields.push_back(std::to_string(START_YEAR + i));
+  }
+
+  csv::CSVReader reader(filename);
+  for (auto& row : reader) {  // Note: use reference to avoid copying
+    auto name = row["Country Code"].get<std::string>();
+    auto it = gdpMap.find(name);
+    if (it != gdpMap.end()) {
+      auto* country = it->second;
+      for (size_t i = 0; i < NUM_YEARS; ++i) {
+        const auto& yearStr = yearFields[i];
+        auto data = row[yearStr].get<>();
+        country->gdp[i] = data == "" ? 0.0 : std::stod(data);  // Assuming gdp is sized to NUM_YEARS
+      }
+    }
+  }
+}
+```
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  ...
+}
+```
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  ...
+}
+```
+
+```cpp
+int main(int argc, char* argv[]) {
+  ...
+  ...
+}
 ```

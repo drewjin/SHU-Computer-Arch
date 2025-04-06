@@ -25,25 +25,25 @@ void CountryData::PrintCountryData() {
 }
 
 MPI_Datatype CreateCountryMpiData() {
-  int blocklengths[4] = {256, 256, 256, 61};
-  MPI_Datatype types[4] = {MPI_CHAR, MPI_CHAR, MPI_CHAR, MPI_DOUBLE};
-  MPI_Aint displacements[4];
+  int blocklengths[5] = {256, 256, 256, 256, 61};
+  MPI_Datatype types[5] = {MPI_CHAR, MPI_CHAR, MPI_CHAR, MPI_CHAR, MPI_DOUBLE};
+  MPI_Aint displacements[5];
 
   CountryData dummy;
   MPI_Aint base_address;
   MPI_Get_address(&dummy, &base_address);
   MPI_Get_address(&dummy.countryCode, &displacements[0]);
-  MPI_Get_address(&dummy.region, &displacements[1]);
-  MPI_Get_address(&dummy.incomeGroup, &displacements[2]);
-  MPI_Get_address(&dummy.gdp, &displacements[3]);
+  MPI_Get_address(&dummy.countryName, &displacements[1]);
+  MPI_Get_address(&dummy.region, &displacements[2]);
+  MPI_Get_address(&dummy.incomeGroup, &displacements[3]);
+  MPI_Get_address(&dummy.gdp, &displacements[4]);
 
-  // 计算相对位移
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     displacements[i] = displacements[i] - base_address;
   }
 
   MPI_Datatype mpiCountryType;
-  MPI_Type_create_struct(4, blocklengths, displacements, types,
+  MPI_Type_create_struct(5, blocklengths, displacements, types,
                          &mpiCountryType);
   MPI_Type_commit(&mpiCountryType);
   return mpiCountryType;

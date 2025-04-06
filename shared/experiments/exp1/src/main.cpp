@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
   // Host load data
   if (rank == 0) {
     const std::string META_DATA_FILE = "data/meta-data.csv";
-    const std::string GDP_DATA_FILE = "data/gdp-data";
+    const std::string GDP_DATA_FILE = "data/gdp-data.csv";
     fullData = ReadMetaData(META_DATA_FILE);
     ReadGdpData(GDP_DATA_FILE, fullData);
     dataSize = fullData.size();
@@ -79,6 +79,7 @@ int main(int argc, char* argv[]) {
     CreateDirectory(PLOT_DIR + "/countries");
     CreateDirectory(PLOT_DIR + "/region");
     CreateDirectory(PLOT_DIR + "/income");
+    std::cout << std::format("Start Country Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
   } 
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -90,6 +91,10 @@ int main(int argc, char* argv[]) {
     plt::title(std::string(country.countryCode) + " GDP per capita");
     plt::save("./plots/countries/Country_" + std::string(country.countryCode) + ".png");
     plt::close();
+  }
+
+  if (rank == 0) {
+    std::cout << std::format("Start Sumarizing Data in {:.2f}s\n", MPI_Wtime() - start_time);
   }
 
   std::set<std::string> regions, incomeGroups;
@@ -168,6 +173,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (rank == 0) {
+    std::cout << std::format("Start Region Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
     for (const auto& [region, sum] : regionSum) {
       const auto& counts = regionCounts[region];
       std::vector<double> avg(61);
@@ -181,7 +187,7 @@ int main(int argc, char* argv[]) {
       plt::save("./plots/region/Region_" + region + ".png");
       plt::close();
     }
-
+    std::cout << std::format("Start Income Plotting in {:.2f}s\n", MPI_Wtime() - start_time);
     for (const auto& [ig, sum] : incomeSum) {
       const auto& counts = incomeCounts[ig];
       std::vector<double> avg(61);
@@ -202,9 +208,6 @@ int main(int argc, char* argv[]) {
   if (rank == 0) {
     double total_time = end_time - start_time;
     std::cout << "Total time: " << total_time << " seconds\n";
-    std::cout << "Run with different number of processes to compare times.\n";
-    std::cout << "Parallel Speedup = T1 / Tp\n";
-    std::cout << "Parallel Efficiency = Speedup / p\n";
   }
 
   MPI_Type_free(&mpiCountryType);

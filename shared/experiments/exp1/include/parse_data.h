@@ -22,8 +22,6 @@ struct CountryData {
 
 MPI_Datatype CreateCountryMpiData();
 
-// std::vector<std::string> SplitCsvLine(const std::string& line);
-
 std::vector<CountryData> ReadMetaData(const std::string& filename);
 
 void ReadGdpData(const std::string& filename, std::vector<CountryData>& countries);
