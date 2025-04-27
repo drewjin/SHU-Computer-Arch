@@ -15,4 +15,4 @@ matplotlib-cpp/
 bin/
 lib/
 hpl-2.3/
-OpenBLAS/
+third_party/

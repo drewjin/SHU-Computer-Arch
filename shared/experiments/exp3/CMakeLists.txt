@@ -38,7 +38,7 @@ endif()
 # ================================================
 # 依赖库配置（OpenBLAS + FMT）
 # ================================================
-set(CUSTOM_LIB_ROOT "/data1/jyj/Learning/OpenMP/.dep/local")
+set(CUSTOM_LIB_ROOT "/data1/jyj/Learning/SHU-Computer-Arch/third_party")
 
 # OpenBLAS
 set(OpenBLAS_INCLUDE_DIRS "${CUSTOM_LIB_ROOT}/include")
@@ -47,7 +47,7 @@ message(STATUS "Found OpenBLAS: ${OpenBLAS_INCLUDE_DIRS} | ${OpenBLAS_LIBRARIES}
 
 # FMT
 set(FMT_INCLUDE_DIR "${CUSTOM_LIB_ROOT}/include")
-set(FMT_LIBRARY "${CUSTOM_LIB_ROOT}/lib/libfmt.so")
+set(FMT_LIBRARY "${CUSTOM_LIB_ROOT}/lib/libfmt.a")
 message(STATUS "Found FMT: ${FMT_INCLUDE_DIR} | ${FMT_LIBRARY}")
 
 # ================================================

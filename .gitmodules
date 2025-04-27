@@ -1,0 +1,6 @@
+[submodule "dependency/OpenBLAS"]
+	path = dependency/OpenBLAS
+	url = https://github.com/OpenMathLib/OpenBLAS.git
+[submodule "dependency/fmt"]
+	path = dependency/fmt
+	url = https://github.com/fmtlib/fmt.git
