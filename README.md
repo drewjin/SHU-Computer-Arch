@@ -15,3 +15,17 @@ RUN mkdir -p /root/.ssh && \
 运行 `run-container.sh`，即可进入容器。
 
 注意，工作区在`/shared`，这样可以保证容器重启后数据不会丢失。
+
+## Submodule Init
+
+输入如下代码初始化`submodule`。
+
+```bash
+git submodule update --init --recursive
+```
+
+随后，build所有项目。
+
+```bash
+zsh build-dependency.sh
+```
