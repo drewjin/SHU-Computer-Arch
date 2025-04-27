@@ -1,4 +1,4 @@
-dependencies=("fmt" "OpenBLAS")
+dependencies=("fmt" "OpenBLAS" "csv-parser")
 install_prefix="./third_party"
 mkdir -p "$install_prefix"
 

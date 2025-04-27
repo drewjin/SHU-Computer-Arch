@@ -4,3 +4,6 @@
 [submodule "dependency/fmt"]
 	path = dependency/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "dependency/csv-parser"]
+	path = dependency/csv-parser
+	url = https://github.com/vincentlaucsb/csv-parser.git
