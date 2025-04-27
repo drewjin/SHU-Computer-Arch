@@ -91,12 +91,12 @@ Matrix tiled_serial_matmul(const Matrix& A, const Matrix& B, size_t M,
                            size_t K, size_t N) {
   Matrix C(M * N); 
 
-  for (size_t i = 0; i < M; i += BLOCK_SIZE) {
-    size_t i_end = std::min(i + BLOCK_SIZE, M);
-    for (size_t j = 0; j < N; j += BLOCK_SIZE) {
-      size_t j_end = std::min(j + BLOCK_SIZE, N);
-      for (size_t k = 0; k < K; k += BLOCK_SIZE) {
-        size_t k_end = std::min(k + BLOCK_SIZE, K);
+  for (size_t i = 0; i < M; i += TILE_SIZE) {
+    size_t i_end = std::min(i + TILE_SIZE, M);
+    for (size_t j = 0; j < N; j += TILE_SIZE) {
+      size_t j_end = std::min(j + TILE_SIZE, N);
+      for (size_t k = 0; k < K; k += TILE_SIZE) {
+        size_t k_end = std::min(k + TILE_SIZE, K);
         for (size_t ii = i; ii < i_end; ++ii) {
           for (size_t kk = k; kk < k_end; ++kk) {
             double a = A[ii * K + kk]; 
@@ -116,21 +116,21 @@ Matrix tiled_parallel_matmul(const Matrix& A, const Matrix& B,
   Matrix C(M * N);
   
 #pragma omp parallel for collapse(2) schedule(dynamic)
-  for (size_t i = 0; i < M; i += BLOCK_SIZE) {
-    for (size_t j = 0; j < N; j += BLOCK_SIZE) {
-      size_t i_end = std::min(i + BLOCK_SIZE, M);
-      size_t j_end = std::min(j + BLOCK_SIZE, N);
-      Matrix local_block(BLOCK_SIZE * BLOCK_SIZE,
+  for (size_t i = 0; i < M; i += TILE_SIZE) {
+    for (size_t j = 0; j < N; j += TILE_SIZE) {
+      size_t i_end = std::min(i + TILE_SIZE, M);
+      size_t j_end = std::min(j + TILE_SIZE, N);
+      Matrix local_block(TILE_SIZE * TILE_SIZE,
                          0);  
 
-      for (size_t k = 0; k < K; k += BLOCK_SIZE) {
-        size_t k_end = std::min(k + BLOCK_SIZE, K);
+      for (size_t k = 0; k < K; k += TILE_SIZE) {
+        size_t k_end = std::min(k + TILE_SIZE, K);
 
         for (size_t ii = i; ii < i_end; ++ii) {
           for (size_t kk = k; kk < k_end; ++kk) {
             double a = A[ii * K + kk];
             for (size_t jj = j; jj < j_end; ++jj) {
-              local_block[(ii - i) * BLOCK_SIZE + (jj - j)] +=
+              local_block[(ii - i) * TILE_SIZE + (jj - j)] +=
                 a * B[kk * N + jj];
             }
           }
@@ -141,7 +141,7 @@ Matrix tiled_parallel_matmul(const Matrix& A, const Matrix& B,
         for (size_t jj = j; jj < j_end; ++jj) {
 #pragma omp atomic
           C[ii * N + jj] +=
-            local_block[(ii - i) * BLOCK_SIZE + (jj - j)];
+            local_block[(ii - i) * TILE_SIZE + (jj - j)];
         }
       }
     }
@@ -155,18 +155,18 @@ Matrix tiled_parallel_matmul_avx512(const Matrix& A, const Matrix& B,
   Matrix C(M * N);
 
   static_assert(
-    BLOCK_SIZE % 8 == 0,
-    "BLOCK_SIZE should be multiple of 8 for AVX512 optimization");
+    TILE_SIZE % 8 == 0,
+    "TILE_SIZE should be multiple of 8 for AVX512 optimization");
 
 #pragma omp parallel for collapse(2) schedule(dynamic)
-  for (size_t i = 0; i < M; i += BLOCK_SIZE) {
-    for (size_t j = 0; j < N; j += BLOCK_SIZE) {
-      size_t i_end = std::min(i + BLOCK_SIZE, M);
-      size_t j_end = std::min(j + BLOCK_SIZE, N);
-      Matrix local_block(BLOCK_SIZE * BLOCK_SIZE, 0);
+  for (size_t i = 0; i < M; i += TILE_SIZE) {
+    for (size_t j = 0; j < N; j += TILE_SIZE) {
+      size_t i_end = std::min(i + TILE_SIZE, M);
+      size_t j_end = std::min(j + TILE_SIZE, N);
+      Matrix local_block(TILE_SIZE * TILE_SIZE, 0);
 
-      for (size_t k = 0; k < K; k += BLOCK_SIZE) {
-        size_t k_end = std::min(k + BLOCK_SIZE, K);
+      for (size_t k = 0; k < K; k += TILE_SIZE) {
+        size_t k_end = std::min(k + TILE_SIZE, K);
 
         for (size_t ii = i; ii < i_end; ++ii) {
           for (size_t kk = k; kk < k_end; ++kk) {
@@ -181,7 +181,7 @@ Matrix tiled_parallel_matmul_avx512(const Matrix& A, const Matrix& B,
 
               __m512d prod = _mm512_mul_pd(a_vec, b_vec);
 
-              size_t  offset = (ii - i) * BLOCK_SIZE + (jj - j);
+              size_t  offset = (ii - i) * TILE_SIZE + (jj - j);
               __m512d acc    = _mm512_loadu_pd(&local_block[offset]);
 
               acc = _mm512_add_pd(acc, prod);
@@ -190,7 +190,7 @@ Matrix tiled_parallel_matmul_avx512(const Matrix& A, const Matrix& B,
             }
 
             for (; jj < j_end; ++jj) {
-              local_block[(ii - i) * BLOCK_SIZE + (jj - j)] +=
+              local_block[(ii - i) * TILE_SIZE + (jj - j)] +=
                 a * B[kk * N + jj];
             }
           }
@@ -201,7 +201,7 @@ Matrix tiled_parallel_matmul_avx512(const Matrix& A, const Matrix& B,
         for (size_t jj = j; jj < j_end; ++jj) {
 #pragma omp atomic
           C[ii * N + jj] +=
-            local_block[(ii - i) * BLOCK_SIZE + (jj - j)];
+            local_block[(ii - i) * TILE_SIZE + (jj - j)];
         }
       }
     }

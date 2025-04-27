@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
       { "Optimized Parallel",       optimized_parallel_matmul    },
       { "Tiled Parallel",           tiled_parallel_matmul        },
       { "AVX Tiled Parallel",       tiled_parallel_matmul_avx512 },
+      { "CUDA Tiled Parallel",      tiled_cuda_matmul            }
     };
 
     fmt::print(

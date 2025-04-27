@@ -5,7 +5,7 @@
 
 #define USE_SIMD
 #define USE_UNROLL
-#define BLOCK_SIZE 32
+#define TILE_SIZE 32
 
 const std::vector<MatrixSize> SIZES {
   { 1000, 1000, 1000 }, { 2000, 2000, 2000 }, { 3000, 3000, 3000 },

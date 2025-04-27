@@ -61,7 +61,7 @@ BenchmarkResult run_benchmark(const std::string& name,
 }
 
 size_t nearest_length(size_t n) {
-  return ((n + BLOCK_SIZE - 1) / BLOCK_SIZE) * BLOCK_SIZE;
+  return ((n + TILE_SIZE - 1) / TILE_SIZE) * TILE_SIZE;
 }
 
 Matrix create_random_matrix(size_t rows, size_t cols, uint64_t seed,

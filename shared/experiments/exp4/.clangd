@@ -13,4 +13,4 @@ CompileFlags:
     Add: 
         - '-std=c++23'
         - '--cuda-gpu-arch=sm_89'
-        - '-I/data1/jyj/Learning/OpenMP/include'
+        - '-I/data1/jyj/Learning/SHU-Computer-Arch/shared/experiments/exp4/include'
