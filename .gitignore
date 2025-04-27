@@ -7,3 +7,12 @@ shared/*
 .dep/
 plots/
 matplotlib-cpp/
+*.o
+*.so
+*.a
+*.zip
+*.tar.gz
+bin/
+lib/
+hpl-2.3/
+OpenBLAS/

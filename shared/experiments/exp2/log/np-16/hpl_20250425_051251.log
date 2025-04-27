@@ -1,0 +1,7 @@
+[mpiexec@master] HYDU_parse_hostfile (utils/args/args.c:316): unable to open host file: /shared/experiments/exp2/hpl-2.3/bin/Linux/nodes-16
+[mpiexec@master] mfile_fn (ui/mpich/utils.c:325): error parsing hostfile
+[mpiexec@master] match_arg (utils/args/args.c:153): match handler returned error
+[mpiexec@master] HYDU_parse_array (utils/args/args.c:175): argument matching returned error
+[mpiexec@master] parse_args (ui/mpich/utils.c:1603): error parsing input array
+[mpiexec@master] HYD_uii_mpx_get_parameters (ui/mpich/utils.c:1655): unable to parse user arguments
+[mpiexec@master] main (ui/mpich/mpiexec.c:128): error parsing parameters

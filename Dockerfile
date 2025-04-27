@@ -30,17 +30,17 @@ RUN mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh
 
 # 编译 MPICH
-RUN mkdir -p /shared/opt/mpich-"$ROLE"; \
-    cd /shared/nfs/mpich-3.4; \
-    export FFLAGS="-fallow-argument-mismatch"; \
-    export FCFLAGS="-fallow-argument-mismatch"; \
-    ./configure --prefix=/shared/opt/mpich-"$ROLE" --with-device=ch4:ofi 2>&1 | tee configure.log; \
-    make install -j16 2>&1 | tee make.log; \
-    echo "export MPICH=/shared/opt/mpich-$ROLE" >> /root/.bashrc; \
-    echo "export PATH=$MPICH/bin:$PATH" >> /root/.bashrc; \
-    echo "export INCLUDE=$MPICH/include:$INCLUDE" >> /root/.bashrc; \
-    echo "export LD_LIBRARY_PATH=$MPICH/lib:$LD_LIBRARY_PATH" >> /root/.bashrc; \
-    source /root/.bashrc; 
+# RUN mkdir -p /shared/opt/mpich-"$ROLE"; \
+#     cd /shared/nfs/mpich-3.4; \
+#     export FFLAGS="-fallow-argument-mismatch"; \
+#     export FCFLAGS="-fallow-argument-mismatch"; \
+#     ./configure --prefix=/shared/opt/mpich-"$ROLE" --with-device=ch4:ofi 2>&1 | tee configure.log; \
+#     make install -j16 2>&1 | tee make.log; \
+#     echo "export MPICH=/shared/opt/mpich-$ROLE" >> /root/.bashrc; \
+#     echo "export PATH=$MPICH/bin:$PATH" >> /root/.bashrc; \
+#     echo "export INCLUDE=$MPICH/include:$INCLUDE" >> /root/.bashrc; \
+#     echo "export LD_LIBRARY_PATH=$MPICH/lib:$LD_LIBRARY_PATH" >> /root/.bashrc; \
+#     source /root/.bashrc; 
 
 # 复制启动脚本
 COPY --chmod=755 entrypoint.sh /entrypoint.sh

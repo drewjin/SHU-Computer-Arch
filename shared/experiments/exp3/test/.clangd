@@ -1,0 +1,4 @@
+CompileFlags:
+  Add: 
+    - -fopenmp
+  Compiler: g++

@@ -1,0 +1,16 @@
+CompileFlags:
+    Remove:
+        - "--expt-extended-lambda"
+        - '-gencode=arch=compute_89,code="sm_89,compute_89"'
+        - "-rdc=true"
+        - '-forward-unknown-to-host-compiler'
+        - '--expt-relaxed-constexpr'
+        - '--generate-code=arch=compute_89,code=[compute_89,sm_89]'
+        - '-forward-unknown-to-host-compiler'
+        - '-arch=native'
+        - '--options-file'
+        - '-Xcompiler=-fPIC'
+    Add: 
+        - '-std=c++23'
+        - '--cuda-gpu-arch=sm_89'
+        - '-I/data1/jyj/Learning/OpenMP/include'

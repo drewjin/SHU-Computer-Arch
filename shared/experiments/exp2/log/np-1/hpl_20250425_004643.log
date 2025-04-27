@@ -1,0 +1,6 @@
+HPL ERROR from process # 0, on line 419 of function HPL_pdinfo:
+>>> Need at least 4 processes for these tests <<<
+
+HPL ERROR from process # 0, on line 621 of function HPL_pdinfo:
+>>> Illegal input in file HPL.dat. Exiting ... <<<
+

@@ -1,0 +1,6 @@
+HPL ERROR from process # 0, on line 395 of function HPL_pdinfo:
+>>> Value of P less than 1 <<<
+
+HPL ERROR from process # 0, on line 621 of function HPL_pdinfo:
+>>> Illegal input in file HPL.dat. Exiting ... <<<
+
