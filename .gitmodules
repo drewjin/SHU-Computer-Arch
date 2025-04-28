@@ -1,9 +1,9 @@
-[submodule "dependency/OpenBLAS"]
-	path = dependency/OpenBLAS
+[submodule "shared/dependency/OpenBLAS"]
+	path = shared/dependency/OpenBLAS
 	url = https://github.com/OpenMathLib/OpenBLAS.git
-[submodule "dependency/fmt"]
-	path = dependency/fmt
+[submodule "shared/dependency/fmt"]
+	path = shared/dependency/fmt
 	url = https://github.com/fmtlib/fmt.git
-[submodule "dependency/csv-parser"]
-	path = dependency/csv-parser
+[submodule "shared/dependency/csv-parser"]
+	path = shared/dependency/csv-parser
 	url = https://github.com/vincentlaucsb/csv-parser.git
