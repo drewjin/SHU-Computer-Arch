@@ -4,6 +4,8 @@ build/
 .DS_Store
 shared/*
 !shared/experiments
+!shared/dependency
+!shared/install-dependency.sh
 .dep/
 plots/
 matplotlib-cpp/
