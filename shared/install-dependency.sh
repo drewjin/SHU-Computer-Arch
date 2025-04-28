@@ -1,4 +1,5 @@
-dependencies=("fmt" "OpenBLAS" "csv-parser")
+# dependencies=("fmt" "OpenBLAS" "csv-parser")
+dependencies=("csv-parser")
 install_prefix="./third_party"
 mkdir -p "$install_prefix"
 
@@ -20,6 +21,12 @@ for dep in "${dependencies[@]}"; do
         cmake --install "$build_dir" --prefix "$install_prefix" || exit 1
         
         rm -rf "$build_dir"
+
+        if [ "$dep" = "csv-parser" ]; then
+            echo "🔍 This is csv-parser, applying special handling for header only staff..."
+            mkdir -p ./third_party/include/csv-parser/
+            cp ./dependency/csv-parser/single_include/csv.hpp ./third_party/include/csv-parser/
+        fi
         
         echo "✅ $dep installed successfully"
     ) 
