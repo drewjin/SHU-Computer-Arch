@@ -1,0 +1,3 @@
+master slots=4
+slave01 slots=2
+slave02 slots=2

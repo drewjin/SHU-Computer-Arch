@@ -39,6 +39,32 @@ done
 echo "🎉 All dependencies installed to: $(realpath "$install_prefix")"
 ```
 
+## 编译OpenMPI
+
+在项目根目录执行如下命令
+
+```bash
+git submodule update --init --recursive
+```
+
+初始化所有的submodule。
+
+随后直接运行编译装载脚本。
+
+```
+echo "▶️ Building Open MPI..."
+OMPI=./dependency/ompi
+cd $OMPI
+./autogen.pl
+./configure --prefix=/shared/third_party
+make -j$(nproc)
+sudo make install
+```
+
+等待编译完成即可。
+
+若报错没有flex，则用apt装好即可。
+
 ## 配置HPL
 
 将Make.Linux_PII_CBLAS配置文件拷贝为Make.Linux，内容修改为如下：
@@ -127,9 +153,9 @@ HPLlib       = $(LIBdir)/libhpl.a
 # header files,  MPlib  is defined  to be the name of  the library to be
 # used. The variable MPdir is only used for defining MPinc and MPlib.
 #
-MPdir        = /shared/third_party/mpich-3.4
+MPdir        = /shared/third_party
 MPinc        = -I$(MPdir)/include
-MPlib        = $(MPdir)/lib/libmpich.so
+MPlib        = $(MPdir)/lib/libmpi.so
 #
 # ----------------------------------------------------------------------
 # - Linear Algebra library (BLAS or VSIPL) -----------------------------
@@ -138,9 +164,9 @@ MPlib        = $(MPdir)/lib/libmpich.so
 # header files,  LAlib  is defined  to be the name of  the library to be
 # used. The variable LAdir is only used for defining LAinc and LAlib.
 #
-LAdir        = /shared/third_party/lib/
+LAdir        = /shared/third_party
 LAinc        =
-LAlib        = $(LAdir)/libopenblas.a $(LAdir)/libopenblas_armv8p-r0.3.29.dev.a
+LAlib        = $(LAdir)/lib/libopenblas.a 
 #
 # ----------------------------------------------------------------------
 # - F77 / C interface --------------------------------------------------
@@ -256,10 +282,8 @@ cat /shared/experiments/exp3/tasks/HPL-$np.dat > $hpl_bin_dir/HPL.dat
 
 mkdir -p $hpl_log_dir
 
-mpirun -machinefile $hpl_nodes -np $np $hpl_prog 2>&1 | tee $hpl_log_dir/hpl_$(date +"%Y%m%d_%H%M%S").log
+mpirun --allow-run-as-root -machinefile $hpl_nodes -np $np $hpl_prog 2>&1 | tee $hpl_log_dir/hpl_$(date +"%Y%m%d_%H%M%S").log
 ```
-
-对应配置文件如下：
 
 ### 任务1：单进程
 
@@ -300,9 +324,9 @@ HPL.out      output file name (if any)
 对应的nodes文件如下：
 
 ```
-master:1
-slave01:0
-slave02:0
+192.168.1.10:2222 slots=1
+192.168.1.10:2223 slots=0
+192.168.1.10:2224 slots=0
 ```
 
 
@@ -346,9 +370,9 @@ HPL.out      output file name (if any)
 对应的nodes文件如下：
 
 ```
-master:1
-slave01:1
-slave02:0
+192.168.1.10:2222 slots=1
+192.168.1.10:2223 slots=1
+192.168.1.10:2224 slots=0
 ```
 
 
@@ -392,9 +416,9 @@ HPL.out      output file name (if any)
 对应的nodes文件如下：
 
 ```
-master:1
-slave01:1
-slave02:1
+192.168.1.10:2222 slots=1
+192.168.1.10:2223 slots=1
+192.168.1.10:2224 slots=1
 ```
 
 
@@ -438,9 +462,9 @@ HPL.out      output file name (if any)
 对应的nodes文件如下：
 
 ```
-master:2
-slave01:1
-slave02:1
+192.168.1.10:2222 slots=2
+192.168.1.10:2223 slots=1
+192.168.1.10:2224 slots=1
 ```
 
 

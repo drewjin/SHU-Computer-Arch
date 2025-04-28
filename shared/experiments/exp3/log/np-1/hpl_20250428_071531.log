@@ -1,0 +1,12 @@
+prterun has detected an attempt to run as root.
+
+Running as root is *strongly* discouraged as any mistake (e.g., in
+defining TMPDIR) or bug can result in catastrophic damage to the OS
+file system, leaving your system in an unusable state.
+
+We strongly suggest that you run prterun as a non-root user.
+
+You can override this protection by adding the --allow-run-as-root
+option to your command line.  However, we reiterate our strong advice
+against doing so - please do so at your own risk.
+--------------------------------------------------------------------------

@@ -1,5 +1,4 @@
-# dependencies=("fmt" "OpenBLAS" "csv-parser")
-dependencies=("csv-parser")
+dependencies=("fmt" "OpenBLAS" "csv-parser")
 install_prefix="./third_party"
 mkdir -p "$install_prefix"
 
@@ -33,5 +32,13 @@ for dep in "${dependencies[@]}"; do
     
     pids+=($!)  
 done
+
+echo "▶️ Building Open MPI..."
+OMPI=./dependency/ompi
+cd $OMPI
+./autogen.pl
+./configure --prefix=/shared/third_party
+make -j$(nproc)
+sudo make install
 
 echo "🎉 All dependencies installed to: $(realpath "$install_prefix")"
