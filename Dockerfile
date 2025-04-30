@@ -4,7 +4,7 @@ ARG ROLE
 
 # 安装基础工具和 SSH 服务
 RUN apt update -qq && \
-    apt install -y openssh-server sudo vim build-essential gcc g++ gfortran libtool automake autoconf wget screen cmake rpcbind cmake git && \
+    apt install -y openssh-server sudo vim build-essential gcc g++ gfortran libtool automake autoconf wget screen cmake rpcbind cmake git flex zsh zlib1g-dev stress&& \
     mkdir -p /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
@@ -25,7 +25,7 @@ RUN mkdir -p /shared/nfs && \
 
 # 添加 SSH 公钥
 RUN mkdir -p /root/.ssh && \
-    echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM8M9N9lnkaXqkrYI0/RGpstU/myvcvOmd0EPGzJme7i drew@drews-Laptop.local" >> /root/.ssh/authorized_keys && \
+    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCz2UuSQOVk1CL+M7tKcvxyrHlkLVT8Qx2GbYNd03QRBde4Dgntx9XbB+O5YYsOzkcCmXArWDbJfN++KY4foeU1gLIIwXKJ4awIOQ4t3GTGKzM3Q6W4ZVncQRnoRF+BRLqW75dRqkR0kAoaS3+tb1HO+W6GKixYp1gnOLr9sdm6dMGvTt1HULfF24n6pEMj07wigg4nV6c4xX+9WEhVTBXESdcwXkLekvk9UpZrgAJP0nH6SkIwLuLdoSBGan3SCWcrZ+1YGhYIo3aKBGwQ1a4kmItOm8AlePevAaqaEjRwWJANl9iACv6XVjzkko1a8+FlfAORGb6XD6alp81vXlQAosD+GDGbBDXxqFO6MDq67LuEkyk+0kv1e2ar1y4Bg4X34LGNUdGrX/wrVlFB+t3jdScRaSlqfqHIv3qUnbyRd+pwHNMF5Ugo8tnGpCwggvgmChpeNrNeYUuMGSdv8A67X8eUfJZlNNRyG1OSRVgc+JjbFXiTMnWlEKcMBcdgjOU= drewjin0827@gmail.com" >> /root/.ssh/authorized_keys && \
     chmod 600 /root/.ssh/authorized_keys && \
     chmod 700 /root/.ssh
 
