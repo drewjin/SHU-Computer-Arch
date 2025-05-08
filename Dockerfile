@@ -25,7 +25,7 @@ RUN mkdir -p /shared/nfs && \
 
 # 添加 SSH 公钥
 RUN mkdir -p /root/.ssh && \
-    echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM8M9N9lnkaXqkrYI0/RGpstU/myvcvOmd0EPGzJme7i drew@drews-Laptop.local" >> /root/.ssh/authorized_keys && \
+    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDCgpYf1CWZgT4hdxSi7NHBbXJK5+PGxmd1/8ItJ1JceY65kmKcIC1HJ+6slC5x0BnyeHfwatyJ87y+rn3IUHgz8s1IuZw/93QPxG3UGfZrhH0kjus24nAnb+tM4DEPFhXdDYt6Rn2mR0p7lviGYTRONFzG6Vdcxg2aaiuQTKBzWYUhoyS0Wtv33hWflemylRMhWfMMUageTSIrT3GC+Aup/boam/6PiU1L/gQZLBQHdloPIYgptpkc4dgw0t0TJj5DpUFX8nTc+C3BLWVF4NON20mpN2+5Hjk8cdPQVNMhn7LElspNZPrGviziDvB6cbJT5kJFM/IdhT3lFtFCbN+Nil171BJYpMRsHpQsHBQf+jIDW8L93INh3PxmlAwu3E6y3OJhfS37pQeXPaUM6moKs8tO1pMPmAGyRIcmN+mayqzJOXaWcrfCTdvwmrJkCsQ1gerlR4wT8w8AmNCVlUjVWFfb4bTIBThfkxjt8Y+xOdOC18t9PaLDQCeETe9Dzn8= root@ubuntu" >> /root/.ssh/authorized_keys && \
     chmod 600 /root/.ssh/authorized_keys && \
     chmod 700 /root/.ssh
 
