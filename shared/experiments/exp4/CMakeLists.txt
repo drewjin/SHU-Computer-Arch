@@ -38,7 +38,7 @@ endif()
 # ================================================
 # 依赖库配置（OpenBLAS + FMT）
 # ================================================
-set(CUSTOM_LIB_ROOT "/data1/jyj/Learning/SHU-Computer-Arch/third_party")
+set(CUSTOM_LIB_ROOT "/data1/jyj/Learning/SHU-Computer-Arch/shared/third_party")
 
 # OpenBLAS
 set(OpenBLAS_INCLUDE_DIRS "${CUSTOM_LIB_ROOT}/include")
