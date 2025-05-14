@@ -1,0 +1,341 @@
+[Using Build Type: Release]
+-- Using GCC/GXX: /data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin/gcc
+-- The CXX compiler identification is GNU 14.2.0
+-- The CUDA compiler identification is NVIDIA 12.6.68 with host compiler GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /data1/jyj/micromamba/envs/cu124/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Found OpenBLAS: /data1/jyj/Learning/SHU-Computer-Arch/shared/third_party/include | /data1/jyj/Learning/SHU-Computer-Arch/shared/third_party/lib/libopenblas.a
+-- Found FMT: /data1/jyj/Learning/SHU-Computer-Arch/shared/third_party/include | /data1/jyj/Learning/SHU-Computer-Arch/shared/third_party/lib/libfmt.a
+-- Found CUDAToolkit: /data1/jyj/micromamba/envs/cu124/targets/x86_64-linux/include (found version "12.6.68")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+-- CXX Compiler: /data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin/g++
+-- CUDA Host Compiler: 
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP_CUDA: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5")
+-- Configuring done (4.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /data1/jyj/Learning/SHU-Computer-Arch/shared/experiments/exp4/build
+[ 16%] Building CUDA object CMakeFiles/CudaMatmul.dir/src/matmul.cu.o
+[ 33%] Linking CUDA shared library libCudaMatmul.so
+[ 33%] Built target CudaMatmul
+[ 50%] Building CXX object CMakeFiles/MatMul_Benchmark.dir/src/main.cpp.o
+[ 66%] Building CXX object CMakeFiles/MatMul_Benchmark.dir/src/matmul.cpp.o
+[ 83%] Building CXX object CMakeFiles/MatMul_Benchmark.dir/src/utils.cpp.o
+[100%] Linking CXX executable MatMul_Benchmark
+[100%] Built target MatMul_Benchmark
+
+<| TEST CASE |>: [M: 1000, K: 1000, N: 1000]
+Generating matrices with seed 114514...
+Generating golden data for [1000 x 1000] x [1000 x 1000] matrices...
+Golden data generatoin completed in [0.062829892] seconds
+
+Running benchmarks for [1000 x 1000] x [1000 x 1000] matrices...
+Test 'Naive Serial' completed in [0.164721234] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [0.162446327] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [0.023864608] seconds
+ ALL CLOSE true
+
+Mismatch at position 70632: [golden: 4.584868540219329, result: 5.198155891848263]
+Test 'Optimized Parallel' completed in [0.013970384] seconds
+ ALL CLOSE false
+
+Test 'Tiled Parallel' completed in [0.016944754] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [0.014018757] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 2000, K: 2000, N: 2000]
+Generating matrices with seed 114514...
+Generating golden data for [2000 x 2000] x [2000 x 2000] matrices...
+Golden data generatoin completed in [0.118333519] seconds
+
+Running benchmarks for [2000 x 2000] x [2000 x 2000] matrices...
+Test 'Naive Serial' completed in [3.218088056] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [1.373617541] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [0.070512203] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [0.056421989] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [0.038224678] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [0.039298616] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 3000, K: 3000, N: 3000]
+Generating matrices with seed 114514...
+Generating golden data for [3000 x 3000] x [3000 x 3000] matrices...
+Golden data generatoin completed in [0.150235321] seconds
+
+Running benchmarks for [3000 x 3000] x [3000 x 3000] matrices...
+Test 'Naive Serial' completed in [11.488128136] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [7.64811106] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [0.339124739] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [0.294925684] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [0.133278992] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [0.145573751] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 4000, K: 4000, N: 4000]
+Generating matrices with seed 114514...
+Generating golden data for [4000 x 4000] x [4000 x 4000] matrices...
+Golden data generatoin completed in [0.21570066] seconds
+
+Running benchmarks for [4000 x 4000] x [4000 x 4000] matrices...
+Test 'Naive Serial' completed in [29.606593904] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [18.327591679] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [0.882664866] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [0.845917268] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [0.29238608] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [0.310602846] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 5000, K: 5000, N: 5000]
+Generating matrices with seed 114514...
+Generating golden data for [5000 x 5000] x [5000 x 5000] matrices...
+Golden data generatoin completed in [0.285307558] seconds
+
+Running benchmarks for [5000 x 5000] x [5000 x 5000] matrices...
+Test 'Naive Serial' completed in [57.871196705] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [35.63895419] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [1.605001465] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [1.536844384] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [0.730741687] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [0.623248401] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 6000, K: 6000, N: 6000]
+Generating matrices with seed 114514...
+Generating golden data for [6000 x 6000] x [6000 x 6000] matrices...
+Golden data generatoin completed in [0.388209766] seconds
+
+Running benchmarks for [6000 x 6000] x [6000 x 6000] matrices...
+Test 'Naive Serial' completed in [103.306431358] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [62.585711358] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [2.787234943] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [2.748057296] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [0.949907652] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [1.0089802] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 7000, K: 7000, N: 7000]
+Generating matrices with seed 114514...
+Generating golden data for [7000 x 7000] x [7000 x 7000] matrices...
+Golden data generatoin completed in [0.571528842] seconds
+
+Running benchmarks for [7000 x 7000] x [7000 x 7000] matrices...
+Test 'Naive Serial' completed in [169.742059369] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [98.03809329] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [6.144585249] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [4.526362459] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [1.544051087] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [1.638753529] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 8000, K: 8000, N: 8000]
+Generating matrices with seed 114514...
+Generating golden data for [8000 x 8000] x [8000 x 8000] matrices...
+Golden data generatoin completed in [0.718768319] seconds
+
+Running benchmarks for [8000 x 8000] x [8000 x 8000] matrices...
+Test 'Naive Serial' completed in [254.112294347] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [147.910281395] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [11.999897961] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [9.451158368] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [2.312758167] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [2.406559831] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 9000, K: 9000, N: 9000]
+Generating matrices with seed 114514...
+Generating golden data for [9000 x 9000] x [9000 x 9000] matrices...
+Golden data generatoin completed in [0.986903719] seconds
+
+Running benchmarks for [9000 x 9000] x [9000 x 9000] matrices...
+Test 'Naive Serial' completed in [349.65938241] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [210.1350156] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [10.173730127] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [14.098844765] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [3.160320618] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [3.333714134] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 10000, K: 10000, N: 10000]
+Generating matrices with seed 114514...
+Generating golden data for [10000 x 10000] x [10000 x 10000] matrices...
+Golden data generatoin completed in [1.360227631] seconds
+
+Running benchmarks for [10000 x 10000] x [10000 x 10000] matrices...
+Test 'Naive Serial' completed in [499.665989382] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [293.531557749] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [14.659556009] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [14.194772444] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [4.345969034] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [4.600836437] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 10000, K: 15000, N: 18000]
+Generating matrices with seed 114514...
+Generating golden data for [10000 x 15000] x [15000 x 18000] matrices...
+Golden data generatoin completed in [3.171143667] seconds
+
+Running benchmarks for [10000 x 15000] x [15000 x 18000] matrices...
+Test 'Naive Serial' completed in [1356.302049273] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [798.97698402] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [45.533967551] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [45.387550666] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [11.725196583] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [12.521405475] seconds
+ ALL CLOSE true
+
+
+<| TEST CASE |>: [M: 20000, K: 20000, N: 20000]
+Generating matrices with seed 114514...
+Generating golden data for [20000 x 20000] x [20000 x 20000] matrices...
+Golden data generatoin completed in [8.857039895] seconds
+
+Running benchmarks for [20000 x 20000] x [20000 x 20000] matrices...
+Test 'Naive Serial' completed in [4145.112274234] seconds
+ ALL CLOSE true
+
+Test 'Tiled Serial' completed in [2422.09387692] seconds
+ ALL CLOSE true
+
+Test 'Naive Parallel' completed in [140.999450787] seconds
+ ALL CLOSE true
+
+Test 'Optimized Parallel' completed in [158.219105793] seconds
+ ALL CLOSE true
+
+Test 'Tiled Parallel' completed in [35.169008392] seconds
+ ALL CLOSE true
+
+Test 'AVX Tiled Parallel' completed in [37.550046566] seconds
+ ALL CLOSE true
+

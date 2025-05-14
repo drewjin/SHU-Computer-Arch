@@ -1,0 +1,69 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // Other configurations...,
+        {
+            // Launch configuration name, anything you want
+            "name": "Launch: Debug GEMM",
+            "type": "cppdbg",
+            "request": "launch",
+            // Path to the generated executable
+            "program": "${workspaceFolder}/build/MatMul_Benchmark",
+            "args": [
+                "114514"
+            ],
+            // Arguments to pass to the program
+            "externalConsole": false,
+            "stopAtEntry": false,
+            // Working directory
+            "cwd": "${workspaceFolder}",
+            // MIMode should be "gdb" for gdb, "lldb" for lldb
+            "MIMode": "gdb",
+            // Path to the gdb executable
+            // Change this to lldb path if you are using lldb
+            "miDebuggerPath": "/data1/jyj/opt/spack/opt/spack/linux-zen4/gdb-14.2-mhkztr362oayden2vpvg5mjgikfbd2bn/bin/gdb",
+            // Pre-launch task, make sure it matches the task label in 
+            // tasks.json
+            "preLaunchTask": "Build: Debug GEMM",
+            // Environment variables
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb/lldb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
+            // Launch configuration name, anything you want
+            "name": "Launch: Debug GEMM (w/o building)",
+            "type": "cppdbg",
+            "request": "launch",
+            // Path to the generated executable
+            "program": "${workspaceFolder}/build/MatMul_Benchmark",
+            "args": [
+                "114514"
+            ],
+            // Arguments to pass to the program
+            "externalConsole": false,
+            "stopAtEntry": false,
+            // Working directory
+            "cwd": "${workspaceFolder}",
+            // MIMode should be "gdb" for gdb, "lldb" for lldb
+            "MIMode": "gdb",
+            // Path to the gdb executable
+            // Change this to lldb path if you are using lldb
+            "miDebuggerPath": "/data1/jyj/opt/spack/opt/spack/linux-zen4/gdb-14.2-mhkztr362oayden2vpvg5mjgikfbd2bn/bin/gdb",
+            // Pre-launch task, make sure it matches the task label in 
+            // tasks.json
+            // Environment variables
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb/lldb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+    ]
+}

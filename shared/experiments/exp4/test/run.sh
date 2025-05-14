@@ -1,2 +1,2 @@
-zsh build.sh
+zsh build.sh Debug
 ./build/omp_program

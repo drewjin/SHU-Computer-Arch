@@ -74,6 +74,8 @@ message(STATUS "CUDA Host Compiler: ${CMAKE_CUDA_HOST_COMPILER}")
 
 find_package(OpenMP REQUIRED)
 
+set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS} -fno-openmp-targets=nvptx64")
+
 # ================================================
 # 构建类型配置（改进版）
 # ================================================
@@ -86,7 +88,7 @@ add_compile_options(
 function(set_target_options target)
     # C++选项
     target_compile_options(${target} PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:-mavx;-mfma>"
+        "$<$<COMPILE_LANGUAGE:CXX>:-mavx;-mfma;-mavx512f>"
         "$<$<CONFIG:Debug>:-g;-O0;-fno-omit-frame-pointer>"
         "$<$<CONFIG:Release>:-O3;-march=native;-DNDEBUG>"
     )

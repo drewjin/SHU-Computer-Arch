@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: Debug GEMM",
+            "type": "shell",
+            "command": "zsh",
+            "args": [
+                "${workspaceFolder}/scripts/build.sh", "Debug",
+            ],
+            "group": "build"
+        },
+    ]
+}

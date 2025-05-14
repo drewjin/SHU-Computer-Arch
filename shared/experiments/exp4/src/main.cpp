@@ -3,7 +3,6 @@
 #include <vector>
 #include <chrono>
 #include "string"
-#include <fmt/base.h>
 #include <fmt/format.h>
 
 #include "custom_config.h"
@@ -42,33 +41,30 @@ int main(int argc, char *argv[]) {
 
     std::vector<std::pair<std::string, TestFunction>> tests = {
       { "Naive Serial",             naive_serial_matmul          },
-      { "ForloopInterleave Serial",
-       forloop_interleave_serial_matmul                          },
       { "Tiled Serial",             tiled_serial_matmul          },
-      { "CUDA NAIVE Parallel",      naive_cuda_matmul            },
       { "Naive Parallel",           naive_parallel_matmul        },
       { "Optimized Parallel",       optimized_parallel_matmul    },
       { "Tiled Parallel",           tiled_parallel_matmul        },
       { "AVX Tiled Parallel",       tiled_parallel_matmul_avx512 },
-      { "CUDA Tiled Parallel",      tiled_cuda_matmul            },
-      { ""}
+      // { "CUDA NAIVE Parallel",      naive_cuda_matmul            },
+      // { "CUDA Tiled Parallel",      tiled_cuda_matmul            },
+      // { "CUBLAS GEMM",              cublas_matmul                }  
     };
 
     fmt::print(
       "\nRunning benchmarks for [{} x {}] x [{} x {}] matrices...\n",
       M, K, K, N);
     for (const auto& [name, func] : tests) {
-      auto* func_ptr = func.target<Matrix (*)(
-        const Matrix&, const Matrix&, size_t, size_t, size_t)>();
-
-      if ((M > 3000 and K > 3000 and N > 3000) and
-           (func_ptr and
-            (*func_ptr == naive_serial_matmul or
-             *func_ptr == tiled_serial_matmul or
-             *func_ptr == forloop_interleave_serial_matmul))) {
-        fmt::print("Overpass task, too large for serial matmul.\n");
-        continue;
-      }
+      // auto* func_ptr = func.target<Matrix (*)(
+      //   const Matrix&, const Matrix&, size_t, size_t, size_t)>();
+      // if ((M > 3000 and K > 3000 and N > 3000) and
+      //      (func_ptr and
+      //       (*func_ptr == naive_serial_matmul or
+      //        *func_ptr == tiled_serial_matmul or
+      //        *func_ptr == forloop_interleave_serial_matmul))) {
+      //   fmt::print("Overpass task, too large for serial matmul.\n");
+      //   continue;
+      // }
       auto result =
         run_benchmark(name, func, matA, matB, matGolden, M, K, N);
       fmt::print(

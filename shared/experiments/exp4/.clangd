@@ -10,6 +10,7 @@ CompileFlags:
         - '-arch=native'
         - '--options-file'
         - '-Xcompiler=-fPIC'
+        - "--libomptarget-nvptx-bc-path"
     Add: 
         - '-std=c++23'
         - '--cuda-gpu-arch=sm_89'
