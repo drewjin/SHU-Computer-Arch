@@ -2,6 +2,92 @@
 
 HPL是测试HPC性能相当重要的Benchmark。
 
+## 重新配置Docker集群
+
+```yaml
+services:
+  master:
+    build: 
+      context: .
+      args:
+        - ROLE=server
+    container_name: master
+    hostname: master
+    environment:
+      - ROOT_PASSWORD=123456 
+    volumes:
+      - ./shared:/shared
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.10
+    ports:
+      - "2222:22"
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '0-7'
+
+  slave01:
+    build: 
+      context: .
+      args:
+        - ROLE=server
+    container_name: slave01
+    hostname: slave01
+    environment:
+      - ROOT_PASSWORD=123456
+    volumes:
+      - ./shared:/shared
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.11
+    ports:
+      - "2223:22"
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '8-15'
+
+  slave02:
+    build: 
+      context: .
+      args:
+        - ROLE=server
+    container_name: slave02
+    hostname: slave02
+    environment:
+      - ROOT_PASSWORD=123456
+    volumes:
+      - ./shared:/shared
+    networks:
+      drew_inner_network:
+        ipv4_address: 192.168.1.12
+    ports:
+      - "2224:22"
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '16-23' 
+
+networks:
+  drew_inner_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+```
+
+相对之前的compose file，现在的配置文件主要在于指定了资源量，并且隔离了cpu核心，防止抢占冲突。
+
 ## 编译装载OpenBLAS
 
 直接编译OpenBLAS代码并安装到自定义位置。
@@ -51,7 +137,7 @@ git submodule update --init --recursive
 
 随后直接运行编译装载脚本。
 
-```
+```bash
 echo "▶️ Building Open MPI..."
 OMPI=./dependency/ompi
 cd $OMPI
@@ -70,7 +156,6 @@ sudo make install
 将Make.Linux_PII_CBLAS配置文件拷贝为Make.Linux，内容修改为如下：
 
 ```makefile
-#  
 #  -- High Performance Computing Linpack Benchmark (HPL)                
 #     HPL - 2.3 - December 2, 2018                          
 #     Antoine P. Petitet                                                
@@ -253,7 +338,6 @@ ARFLAGS      = r
 RANLIB       = echo
 #
 # ----------------------------------------------------------------------
-
 ```
 
 随后输入如下命令进行构建。
@@ -287,7 +371,7 @@ mpirun --allow-run-as-root -machinefile $hpl_nodes -np $np $hpl_prog 2>&1 | tee 
 
 ### 任务1：单进程
 
-```
+```bash
 HPLinpack benchmark input file
 Innovative Computing Laboratory, University of Tennessee
 HPL.out      output file name (if any)
@@ -323,17 +407,17 @@ HPL.out      output file name (if any)
 
 对应的nodes文件如下：
 
-```
-192.168.1.10:2222 slots=1
-192.168.1.10:2223 slots=0
-192.168.1.10:2224 slots=0
+```bash
+master slots=1
+slave01 slots=0
+slave02 slots=0
 ```
 
 
 
 ### 任务2：2进程
 
-```
+```bash
 HPLinpack benchmark input file
 Innovative Computing Laboratory, University of Tennessee
 HPL.out      output file name (if any)
@@ -369,17 +453,17 @@ HPL.out      output file name (if any)
 
 对应的nodes文件如下：
 
-```
-192.168.1.10:2222 slots=1
-192.168.1.10:2223 slots=1
-192.168.1.10:2224 slots=0
+```bash
+master slots=1
+slave01 slots=1
+slave02 slots=0
 ```
 
 
 
 ### 任务3：3进程
 
-```
+```bash
 HPLinpack benchmark input file
 Innovative Computing Laboratory, University of Tennessee
 HPL.out      output file name (if any)
@@ -415,17 +499,17 @@ HPL.out      output file name (if any)
 
 对应的nodes文件如下：
 
-```
-192.168.1.10:2222 slots=1
-192.168.1.10:2223 slots=1
-192.168.1.10:2224 slots=1
+```bash
+master slots=1
+slave01 slots=1
+slave02 slots=1
 ```
 
 
 
 ### 任务4：4进程
 
-```
+```bash
 HPLinpack benchmark input file
 Innovative Computing Laboratory, University of Tennessee
 HPL.out      output file name (if any)
@@ -461,84 +545,57 @@ HPL.out      output file name (if any)
 
 对应的nodes文件如下：
 
-```
-192.168.1.10:2222 slots=2
-192.168.1.10:2223 slots=1
-192.168.1.10:2224 slots=1
-```
-
-
-
-### 任务5：12进程
-
-```
-HPLinpack benchmark input file
-Innovative Computing Laboratory, University of Tennessee
-HPL.out      output file name (if any)
-6            device out (6=stdout,7=stderr,file)
-2            # of problems sizes (N)
-1960   2048  Ns
-2            # of NBs
-60     80    NBs
-0            PMAP process mapping (0=Row-,1=Column-major)
-2            # of process grids (P x Q)
-2   1        Ps
-2   4        Qs
-16.0         threshold
-3            # of panel fact
-0 1 2        PFACTs (0=left, 1=Crout, 2=Right)
-2            # of recursive stopping criterium
-2 4          NBMINs (>= 1)
-1            # of panels in recursion
-2            NDIVs
-3            # of recursive panel fact.
-0 1 2        RFACTs (0=left, 1=Crout, 2=Right)
-1            # of broadcast
-0            BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
-1            # of lookahead depth
-0            DEPTHs (>=0)
-2            SWAP (0=bin-exch,1=long,2=mix)
-64           swapping threshold
-0            L1 in (0=transposed,1=no-transposed) form
-0            U  in (0=transposed,1=no-transposed) form
-1            Equilibration (0=no,1=yes)
-8            memory alignment in double (> 0)
-
+```bash
+master slots=2
+slave01 slots=1
+slave02 slots=1
 ```
 
-对应的nodes文件如下：
 
-```
-master:4
-slave01:4
-slave02:4
-```
 
 ## 实验
 
-首先，我们对理论性能进行分析。
+首先对理论性能进行分析，设备lscpu输出如下：
 
 ```bash
-➜  exp3 lscpu 
-Architecture:             aarch64
-  CPU op-mode(s):         64-bit
+Architecture:             x86_64
+  CPU op-mode(s):         32-bit, 64-bit
+  Address sizes:          48 bits physical, 48 bits virtual
   Byte Order:             Little Endian
-CPU(s):                   8
-  On-line CPU(s) list:    0-7
-Vendor ID:                Apple
-  Model name:             -
-    Model:                0
-    Thread(s) per core:   1
-    Core(s) per cluster:  8
-    Socket(s):            -
-    Cluster(s):           1
-    Stepping:             0x0
-    CPU(s) scaling MHz:   100%
-    CPU max MHz:          2000.0000
-    CPU min MHz:          2000.0000
-    BogoMIPS:             48.00
-    Flags:                fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 asimd
-                          dp sha512 asimdfhm dit uscat ilrcpc flagm sb dcpodp flagm2 frint bf16
+CPU(s):                   24
+  On-line CPU(s) list:    0-23
+Vendor ID:                AuthenticAMD
+  Model name:             AMD Ryzen 9 5900X 12-Core Processor
+    CPU family:           25
+    Model:                33
+    Thread(s) per core:   2
+    Core(s) per socket:   12
+    Socket(s):            1
+    Stepping:             0
+    Frequency boost:      enabled
+    CPU max MHz:          4950.1948
+    CPU min MHz:          2200.0000
+    BogoMIPS:             7386.07
+    Flags:                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscal
+                          l nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf 
+                          rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_
+                          lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext pe
+                          rfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall
+                           fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec
+                           xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local user_shstk clzero irperf xsaveerptr rdpru
+                           wbnoinvd arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthr
+                          eshold avic v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smc
+                          a fsrm debug_swap
+Virtualization features:  
+  Virtualization:         AMD-V
+Caches (sum of all):      
+  L1d:                    384 KiB (12 instances)
+  L1i:                    384 KiB (12 instances)
+  L2:                     6 MiB (12 instances)
+  L3:                     64 MiB (2 instances)
+NUMA:                     
+  NUMA node(s):           1
+  NUMA node0 CPU(s):      0-23
 Vulnerabilities:          
   Gather data sampling:   Not affected
   Itlb multihit:          Not affected
@@ -548,88 +605,114 @@ Vulnerabilities:
   Mmio stale data:        Not affected
   Reg file data sampling: Not affected
   Retbleed:               Not affected
-  Spec rstack overflow:   Not affected
-  Spec store bypass:      Vulnerable
-  Spectre v1:             Mitigation; __user pointer sanitization
-  Spectre v2:             Not affected
+  Spec rstack overflow:   Vulnerable: Safe RET, no microcode
+  Spec store bypass:      Mitigation; Speculative Store Bypass disabled via prctl
+  Spectre v1:             Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+  Spectre v2:             Mitigation; Retpolines; IBPB conditional; IBRS_FW; STIBP always-on; RSB filling; PBRSB-eIBRS Not affected; 
+                          BHI Not affected
   Srbds:                  Not affected
   Tsx async abort:        Not affected
 ```
 
-我初步跑出的结果如下：
+具体计算如下：
+
+**双精度（FP64）峰值：**
+
+- FLOPs/周期/核心 = 16
+- 峰值 = 4.95 GHz × 12 × 16 = **950.4 GFLOPs**
+
+**单精度（FP32）峰值：**
+
+- FLOPs/周期/核心 = 32
+- 峰值 = 4.95 GHz × 12 × 32 = **1900.8 GFLOPs**
+
+HPL是双精度任务。
+
+### 基本实验
+
+使用如下脚本进行基准实验：
+
+```bash
+workspace=$(pwd)
+log_dir=$workspace/log
+hpl_bin_dir=$workspace/hpl-2.3/bin/Linux
+hpl_task_dir=$workspace/tasks
+
+cd $hpl_bin_dir
+
+# 获取外部传入的 np 值
+np=${1:-24}  
+hpl_prog=$hpl_bin_dir/xhpl
+hpl_nodes=$hpl_task_dir/nodes-$np
+hpl_log_dir=$log_dir/np-$np
+
+cat $hpl_task_dir/HPL-$np.dat > $hpl_bin_dir/HPL.dat
+
+mkdir -p $hpl_log_dir
+
+mpirun \
+    --allow-run-as-root \
+    --hostfile $hpl_nodes \
+    -np $np \
+    $hpl_prog 2>&1 | tee $hpl_log_dir/hpl_naive_$(date +"%Y%m%d_%H%M%S").log
 
 ```
-================================================================================
-T/V                N    NB     P     Q               Time                 Gflops
---------------------------------------------------------------------------------
-WR00L2L2        1960    60     1     1               0.79             6.3631e+00
-HPL_pdgesv() start time Fri Apr 25 02:28:26 2025
 
-HPL_pdgesv() end time   Fri Apr 25 02:28:27 2025
+统计结果如下：
 
---------------------------------------------------------------------------------
-||Ax-b||_oo/(eps*(||A||_oo*||x||_oo+||b||_oo)*N)=   5.11993621e-03 ...... PASSED
-================================================================================
-T/V                N    NB     P     Q               Time                 Gflops
---------------------------------------------------------------------------------
-WR00L2L4        1960    60     1     1               0.82             6.1050e+00
-HPL_pdgesv() start time Fri Apr 25 02:28:27 2025
+| 进程个数 | 峰值速度 | HPL Gflops | 效率   | N     | NB   | P    | Q    | Time  | 参与运算主机名           |
+| -------- | -------- | ---------- | ------ | ----- | ---- | ---- | ---- | ----- | ------------------------ |
+| **1**    | 79.20    | 61.89      | 78.15% | 12000 | 160  | 1    | 1    | 18.62 | master                   |
+| **2**    | 158.40   | 62.18      | 39.26% | 12000 | 160  | 1    | 2    | 18.53 | master, slave01          |
+| **3**    | 237.60   | 90.61      | 38.13% | 12000 | 160  | 1    | 3    | 12.72 | master, slave01, slave02 |
+| **4**    | 316.80   | 117.58     | 37.11% | 12000 | 160  | 1    | 4    | 9.80  | master, slave01, slave02 |
 
-HPL_pdgesv() end time   Fri Apr 25 02:28:28 2025
+### 优化性能的实验
+
+开启超线程，并结合MPI 混合 OpenMP，映射OMP_NUM_THREADS=4。
+
+对应脚本如下：
+
+```bash
+workspace=$(pwd)
+log_dir=$workspace/log
+hpl_bin_dir=$workspace/hpl-2.3/bin/Linux
+hpl_task_dir=$workspace/tasks
+
+cd $hpl_bin_dir
+
+# 获取外部传入的 np 值
+np=${1:-24}  
+hpl_prog=$hpl_bin_dir/xhpl
+hpl_nodes=$hpl_task_dir/nodes-$np
+hpl_log_dir=$log_dir/np-$np
+
+cat $hpl_task_dir/HPL-$np.dat > $hpl_bin_dir/HPL.dat
+
+mkdir -p $hpl_log_dir
+
+mpirun \
+    --allow-run-as-root \
+    --hostfile $hpl_nodes \
+    --bind-to hwthread \
+    --map-by socket:PE=4 \
+    -np $np \
+    $hpl_prog 2>&1 | tee $hpl_log_dir/hpl_omp_mpi_mix_$(date +"%Y%m%d_%H%M%S").log
+
 ```
 
-性能过于低下，定量分析：
+具体结果如下：
 
-**1. 硬件特性与性能瓶颈分析**
-**(1) Apple Silicon关键特征**
-• 统一内存架构（UMA）：CPU/GPU共享内存，延迟低但带宽有限（约60GB/s，M1实测）。
+| 进程个数 | 峰值速度 | HPL Gflops | 效率   | N     | NB   | P    | Q    | Time | 参与运算主机名           |
+| -------- | -------- | ---------- | ------ | ----- | ---- | ---- | ---- | ---- | ------------------------ |
+| **1**    | 316.80   | 203.85     | 64.35% | 12000 | 160  | 1    | 1    | 5.65 | master                   |
+| **2**    | 633.60   | 196.36     | 30.99% | 12000 | 160  | 1    | 2    | 5.87 | master, slave01          |
+| **3**    | 950.40   | 261.34     | 27.50% | 12000 | 160  | 1    | 3    | 4.41 | master, slave01, slave02 |
+| **4**    | 1267.20  | 295.94     | 23.35% | 12000 | 160  | 1    | 4    | 3.89 | master, slave01, slave02 |
 
-• Firestorm核心：8核无超线程，单线程性能强但缺乏SIMD（如AVX512）。
+增加测试，下面24进程是无OMP+MPI，6是开启超线程，并结合OMP + MPI。可见同样峰值速度情况下，即资源相同情况下，OMP混合MPI带来的性能提升是相当明显的。
 
-• 固定频率2.0GHz：无动态超频，性能预测更稳定。
-
-**(2) 理论峰值（Rpeak）估算**
-• 单核算力：  
-
-  ```plaintext
-  2.0GHz × 4（双发射FPU）× 2（FMA） = 16 GFLOPs/core
-  ```
-• 8核理论峰值：  
-
-  ```plaintext
-  16 GFLOPs × 8核 = 128 GFLOPs
-  ```
-• 当前效率：  
-
-  ```plaintext
-  6.781 GFLOPs（最佳单进程） / 128 GFLOPs ≈ 5.3% 
-  ```
-  极低效率表明存在严重配置或内存瓶颈。
-
-**2. 进程数增加变慢的根本原因**
-**(1) 内存带宽饱和**
-• 单进程实测带宽需求：  
-
-  ```plaintext
-  6.781 GFLOPs × 1（FLOP/Byte，HPL访存比） ≈ 6.8 GB/s
-  ```
-  仅单进程已占用 11% 带宽（按60GB/s计），多进程会直接争抢带宽。
-
-**(2) 进程通信开销**
-• 跨核心延迟：Apple Silicon的8核分为4性能核+4能效核，进程绑定不当会导致调度到能效核。
-
-• MPI通信：`P×Q=2×2` 时，进程间矩阵广播会占用共享缓存，加剧竞争。
-
-**(3) 小矩阵问题**
-• N=1960 时，每个进程分到的子矩阵仅约 `980×980`（P×Q=2×2），无法隐藏通信延迟。
-
-
-
-
-
-| 进程个数 | 峰值速度 | HPL Gflops | 效率 | N    | NB   | P    | Q    | Time | 参与运算主机名 |
-| -------- | -------- | ---------- | ---- | ---- | ---- | ---- | ---- | ---- | -------------- |
-| **1**    |          |            |      |      |      |      |      |      |                |
-| **2**    |          |            |      |      |      |      |      |      |                |
-| **3**    |          |            |      |      |      |      |      |      |                |
-| **4**    |          |            |      |      |      |      |      |      |                |
+| 进程个数 | 峰值速度 | HPL Gflops | 效率   | N     | NB   | P    | Q    | Time  | 参与运算主机名           |
+| -------- | -------- | ---------- | ------ | ----- | ---- | ---- | ---- | ----- | ------------------------ |
+| **6**    | 1900.80  | 385.14     | 20.26% | 24000 | 160  | 1    | 6    | 23.93 | master, slave01, slave02 |
+| **24**   | 1900.80  | 327.21     | 17.21% | 24000 | 160  | 4    | 6    | 28.17 | master, slave01, slave02 |
