@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "linux-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "compilerPath": "/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin/gcc",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "linux-gcc-x64",
+      "compilerArgs": [
+        ""
+      ]
+    }
+  ],
+  "version": 4
+}
