@@ -6,14 +6,24 @@
 #include <vector>
 #include <functional>
 
-#define CHECK_CUDA(call)                                     \
-  do {                                                       \
-    cudaError_t err = call;                                  \
-    if (err != cudaSuccess) {                                \
-      fprintf(stderr, "CUDA Error at %s:%d: %s\n", __FILE__, \
-              __LINE__, cudaGetErrorString(err));            \
-      exit(EXIT_FAILURE);                                    \
-    }                                                        \
+#define CHECK_CUDA(call)                                                 \
+  do {                                                                   \
+    cudaError_t err = call;                                              \
+    if (err != cudaSuccess) {                                            \
+      fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\"\n",        \
+              __FILE__, __LINE__, err, cudaGetErrorString(err), #call);  \
+      exit(EXIT_FAILURE);                                                \
+    }                                                                    \
+  } while (0)
+
+#define CHECK_CUBLAS(call)                                               \
+  do {                                                                   \
+    cublasStatus_t err = call;                                           \
+    if (err != CUBLAS_STATUS_SUCCESS) {                                  \
+      fprintf(stderr, "CUBLAS error at %s:%d code=%d \"%s\"\n",          \
+              __FILE__, __LINE__, err, #call);                           \
+      exit(EXIT_FAILURE);                                                \
+    }                                                                    \
   } while (0)
 
 using Matrix       = std::vector<double>;

@@ -1,5 +1,7 @@
 CompileFlags:
     Remove:
+        - '-ccbin=/usr/bin/g++'
+        - '-allow-unsupported-compiler'
         - "--expt-extended-lambda"
         - '-gencode=arch=compute_89,code="sm_89,compute_89"'
         - "-rdc=true"
@@ -14,4 +16,6 @@ CompileFlags:
     Add: 
         - '-std=c++23'
         - '--cuda-gpu-arch=sm_89'
-        - '-I/data1/jyj/Learning/SHU-Computer-Arch/shared/experiments/exp4/include'
+        - '-x'
+        - 'cuda'
+        - '--cuda-path=/usr/local/cuda'

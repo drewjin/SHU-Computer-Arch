@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <stdexcept>
 
 #include "custom_config.h"
 #include "matmul.cuh"
@@ -138,71 +137,44 @@ Matrix tiled_cuda_matmul(const Matrix& A, const Matrix& B, size_t M,
   return C;
 }
 
-Matrix cublas_matmul(const Matrix& A, const Matrix& B, size_t M,
-                     size_t K, size_t N) {
+Matrix cublas_matmul(const Matrix& A, const Matrix& B,
+           size_t M, size_t K, size_t N) {
   cublasHandle_t handle;
-  cudaError_t    cudaStatus;
-  cublasStatus_t cublasStatus;
+  CHECK_CUBLAS(cublasCreate(&handle));
 
-  cublasStatus = cublasCreate(&handle);
-  if (cublasStatus != CUBLAS_STATUS_SUCCESS) {
-    throw std::runtime_error("Failed to create cuBLAS handle");
-  }
+  double *d_A = nullptr, *d_B = nullptr, *d_C = nullptr;
+  CHECK_CUDA(cudaMalloc(&d_A, M * K * sizeof(double)));
+  CHECK_CUDA(cudaMalloc(&d_B, K * N * sizeof(double)));
+  CHECK_CUDA(cudaMalloc(&d_C, M * N * sizeof(double)));
 
-  float *d_A, *d_B, *d_C;
-  cudaStatus = cudaMalloc(&d_A, M * K * sizeof(float));
-  cudaStatus = cudaMalloc(&d_B, K * N * sizeof(float));
-  cudaStatus = cudaMalloc(&d_C, M * N * sizeof(float));
-  if (cudaStatus != cudaSuccess) {
-    cublasDestroy(handle);
-    throw std::runtime_error("Failed to allocate device memory");
-  }
+  // Copy matrices from host to device
+  CHECK_CUDA(cudaMemcpy(d_A, A.data(), M * K * sizeof(double), cudaMemcpyHostToDevice));
+  CHECK_CUDA(cudaMemcpy(d_B, B.data(), K * N * sizeof(double), cudaMemcpyHostToDevice));
 
-  cublasStatus =
-    cublasSetMatrix(M, K, sizeof(float), A.data(), M, d_A, M);
-  cublasStatus =
-    cublasSetMatrix(K, N, sizeof(float), B.data(), K, d_B, K);
-  if (cublasStatus != CUBLAS_STATUS_SUCCESS) {
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cublasDestroy(handle);
-    throw std::runtime_error("Failed to copy data to device");
-  }
+  // Scalar factors
+  const double alpha = 1.0;
+  const double beta = 0.0;
 
-  float  alpha = 1.0f;
-  float  beta  = 0.0f;
-  float* A_ptr = d_A;  
-  float* B_ptr = d_B;  
-  float* C_ptr = d_C;  
+  // Perform matrix multiplication: C = alpha*A*B + beta*C
+  // Note: cuBLAS uses column-major order, but our matrices are row-major
+  // So we compute B*A instead of A*B (effectively transposing the operation)
+  CHECK_CUBLAS(cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+               N, M, K,
+               &alpha,
+               d_B, N,
+               d_A, K,
+               &beta,
+               d_C, N));
 
-  cublasStatus =
-    cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &alpha,
-                B_ptr, N,  
-                A_ptr, K, &beta, C_ptr, N);
-  if (cublasStatus != CUBLAS_STATUS_SUCCESS) {
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cublasDestroy(handle);
-    throw std::runtime_error("cuBLAS kernel execution failed");
-  }
+  // Create result matrix and copy from device
+  Matrix C(M * N, 0.0);
+  CHECK_CUDA(cudaMemcpy(C.data(), d_C, M * N * sizeof(double), cudaMemcpyDeviceToHost));
 
-  Matrix C(M, N);
-  cublasStatus =
-    cublasGetMatrix(M, N, sizeof(float), d_C, M, C.data(), M);
-  if (cublasStatus != CUBLAS_STATUS_SUCCESS) {
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);
-    cublasDestroy(handle);
-    throw std::runtime_error("Failed to copy result to host");
-  }
-
-  cudaFree(d_A);
-  cudaFree(d_B);
-  cudaFree(d_C);
-  cublasDestroy(handle);
+  // Clean up
+  CHECK_CUDA(cudaFree(d_A));
+  CHECK_CUDA(cudaFree(d_B));
+  CHECK_CUDA(cudaFree(d_C));
+  CHECK_CUBLAS(cublasDestroy(handle));
 
   return C;
 }

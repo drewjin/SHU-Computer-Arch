@@ -1,0 +1,184 @@
+CMake Error at /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:868 (message):
+  Compiling the CUDA compiler identification source file
+  "CMakeCUDACompilerId.cu" failed.
+
+  Compiler: /usr/local/cuda/bin/nvcc
+
+  Build flags:
+
+  Id flags: --keep;--keep-dir;tmp -v
+
+
+
+  The output was:
+
+  1
+
+  #$ _NVVM_BRANCH_=nvvm
+
+  #$ _SPACE_=
+
+  #$ _CUDART_=cudart
+
+  #$ _HERE_=/usr/local/cuda/bin
+
+  #$ _THERE_=/usr/local/cuda/bin
+
+  #$ _TARGET_SIZE_=
+
+  #$ _TARGET_DIR_=
+
+  #$ _TARGET_DIR_=targets/x86_64-linux
+
+  #$ TOP=/usr/local/cuda/bin/..
+
+  #$ NVVMIR_LIBRARY_DIR=/usr/local/cuda/bin/../nvvm/libdevice
+
+  #$
+  LD_LIBRARY_PATH=/usr/local/cuda/bin/../lib:/data1/jyj/third_party/lib:/usr/local/cuda/lib64:/data1/jyj/third_party/lib:/usr/local/cuda/lib:/data1/jyj/third_party/lib:/data1/jyj/micromamba/envs/cu124/targets/x86_64-linux/lib:
+
+  #$
+  PATH=/usr/local/cuda/bin/../nvvm/bin:/usr/local/cuda/bin:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/usr/local/cuda/bin:/data1/jyj/opt/clangd_20.1.0/bin:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/usr/local/cuda/bin:/data1/jyj/opt/clangd_20.1.0/bin:/home/jyj/.vscode-server/cli/servers/Stable-848b80aeb52026648a8ff9f7c45a9b0a80641e2e/server/bin/remote-cli:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/data1/jyj/micromamba/envs/cu124/targets/x86_64-linux/bin:/data1/jyj/opt/clangd_20.1.0/bin:/data1/jyj/micromamba/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+  #$ INCLUDES="-I/usr/local/cuda/bin/../targets/x86_64-linux/include"
+
+  #$ LIBRARIES= "-L/usr/local/cuda/bin/../targets/x86_64-linux/lib/stubs"
+  "-L/usr/local/cuda/bin/../targets/x86_64-linux/lib"
+
+  #$ CUDAFE_FLAGS=
+
+  #$ PTXAS_FLAGS=
+
+  #$ rm tmp/a_dlink.reg.c
+
+  #$ gcc -D__CUDA_ARCH_LIST__=520 -E -x c++ -D__CUDACC__ -D__NVCC__
+  "-I/usr/local/cuda/bin/../targets/x86_64-linux/include"
+  -D__CUDACC_VER_MAJOR__=12 -D__CUDACC_VER_MINOR__=1
+  -D__CUDACC_VER_BUILD__=105 -D__CUDA_API_VER_MAJOR__=12
+  -D__CUDA_API_VER_MINOR__=1 -D__NVCC_DIAG_PRAGMA_SUPPORT__=1 -include
+  "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o
+  "tmp/CMakeCUDACompilerId.cpp4.ii"
+
+  In file included from
+  /usr/local/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+
+                   from <command-line>:
+
+  
+  /usr/local/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:132:2:
+  error: #error -- unsupported GNU version! gcc versions later than 12 are
+  not supported! The nvcc flag '-allow-unsupported-compiler' can be used to
+  override this version check; however, using an unsupported host compiler
+  may cause compilation failure or incorrect run time execution.  Use at your
+  own risk.
+
+    132 | #error -- unsupported GNU version! gcc versions later than 12 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+        |  ^~~~~
+
+  # --error 0x1 --
+
+
+
+
+
+Call Stack (most recent call first):
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:53 (__determine_compiler_id_test)
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCUDACompiler.cmake:131 (CMAKE_DETERMINE_COMPILER_ID)
+  CMakeLists.txt:2 (project)
+
+
+-- Configuring incomplete, errors occurred!
+CMake Error at /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:868 (message):
+  Compiling the CUDA compiler identification source file
+  "CMakeCUDACompilerId.cu" failed.
+
+  Compiler: /usr/local/cuda/bin/nvcc
+
+  Build flags:
+
+  Id flags: --keep;--keep-dir;tmp -v
+
+
+
+  The output was:
+
+  1
+
+  #$ _NVVM_BRANCH_=nvvm
+
+  #$ _SPACE_=
+
+  #$ _CUDART_=cudart
+
+  #$ _HERE_=/usr/local/cuda/bin
+
+  #$ _THERE_=/usr/local/cuda/bin
+
+  #$ _TARGET_SIZE_=
+
+  #$ _TARGET_DIR_=
+
+  #$ _TARGET_DIR_=targets/x86_64-linux
+
+  #$ TOP=/usr/local/cuda/bin/..
+
+  #$ NVVMIR_LIBRARY_DIR=/usr/local/cuda/bin/../nvvm/libdevice
+
+  #$
+  LD_LIBRARY_PATH=/usr/local/cuda/bin/../lib:/data1/jyj/third_party/lib:/usr/local/cuda/lib64:/data1/jyj/third_party/lib:/usr/local/cuda/lib:/data1/jyj/third_party/lib:/data1/jyj/micromamba/envs/cu124/targets/x86_64-linux/lib:
+
+  #$
+  PATH=/usr/local/cuda/bin/../nvvm/bin:/usr/local/cuda/bin:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/usr/local/cuda/bin:/data1/jyj/opt/clangd_20.1.0/bin:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/usr/local/cuda/bin:/data1/jyj/opt/clangd_20.1.0/bin:/home/jyj/.vscode-server/cli/servers/Stable-848b80aeb52026648a8ff9f7c45a9b0a80641e2e/server/bin/remote-cli:/data1/jyj/opt/cmake-4.0.1-linux-x86_64/bin:/data1/jyj/opt/spack/opt/spack/linux-x86_64_v4/gcc-14.2.0-2solg7ts6ugn6mrwsd5yeousamizyv3w/bin:/data1/jyj/opt/spack/bin:/data1/jyj/micromamba/envs/cu124/targets/x86_64-linux/bin:/data1/jyj/opt/clangd_20.1.0/bin:/data1/jyj/micromamba/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+  #$ INCLUDES="-I/usr/local/cuda/bin/../targets/x86_64-linux/include"
+
+  #$ LIBRARIES= "-L/usr/local/cuda/bin/../targets/x86_64-linux/lib/stubs"
+  "-L/usr/local/cuda/bin/../targets/x86_64-linux/lib"
+
+  #$ CUDAFE_FLAGS=
+
+  #$ PTXAS_FLAGS=
+
+  #$ rm tmp/a_dlink.reg.c
+
+  #$ gcc -D__CUDA_ARCH_LIST__=520 -E -x c++ -D__CUDACC__ -D__NVCC__
+  "-I/usr/local/cuda/bin/../targets/x86_64-linux/include"
+  -D__CUDACC_VER_MAJOR__=12 -D__CUDACC_VER_MINOR__=1
+  -D__CUDACC_VER_BUILD__=105 -D__CUDA_API_VER_MAJOR__=12
+  -D__CUDA_API_VER_MINOR__=1 -D__NVCC_DIAG_PRAGMA_SUPPORT__=1 -include
+  "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o
+  "tmp/CMakeCUDACompilerId.cpp4.ii"
+
+  In file included from
+  /usr/local/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+
+                   from <command-line>:
+
+  
+  /usr/local/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:132:2:
+  error: #error -- unsupported GNU version! gcc versions later than 12 are
+  not supported! The nvcc flag '-allow-unsupported-compiler' can be used to
+  override this version check; however, using an unsupported host compiler
+  may cause compilation failure or incorrect run time execution.  Use at your
+  own risk.
+
+    132 | #error -- unsupported GNU version! gcc versions later than 12 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+        |  ^~~~~
+
+  # --error 0x1 --
+
+
+
+
+
+Call Stack (most recent call first):
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCompilerId.cmake:53 (__determine_compiler_id_test)
+  /data1/jyj/opt/cmake-4.0.1-linux-x86_64/share/cmake-4.0/Modules/CMakeDetermineCUDACompiler.cmake:131 (CMAKE_DETERMINE_COMPILER_ID)
+  CMakeLists.txt:2 (project)
+
+
+-- Configuring incomplete, errors occurred!
+make: *** [Makefile:152: cmake_check_build_system] Error 1
+build.sh:4: no such file or directory: ./matrix_mul

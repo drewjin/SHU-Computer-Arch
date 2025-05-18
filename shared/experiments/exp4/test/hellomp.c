@@ -18,15 +18,12 @@ void comput(float *A, float *B, float *C) {
 }
 #elif defined (MANUAL_UNROLL)
 void comput(float *A, float *B, float *C) {
-  for (int y = 0; y < 4; y++) {
-    C[4 * y + 0] = A[4 * y + 0] * B[0] + A[4 * y + 1] * B[4] +
-                   A[4 * y + 2] * B[8] + A[4 * y + 3] * B[12];
-    C[4 * y + 1] = A[4 * y + 0] * B[1] + A[4 * y + 1] * B[5] +
-                   A[4 * y + 2] * B[9] + A[4 * y + 3] * B[13];
-    C[4 * y + 2] = A[4 * y + 0] * B[2] + A[4 * y + 1] * B[6] +
-                   A[4 * y + 2] * B[10] + A[4 * y + 3] * B[14];
-    C[4 * y + 3] = A[4 * y + 0] * B[3] + A[4 * y + 1] * B[7] +
-                   A[4 * y + 2] * B[11] + A[4 * y + 3] * B[15];
+  int x, y;
+  for (y = 0; y < 4; ++y) {
+    for (x = 0; x < 4; ++x) {
+      C[4 * y + x] = A[4 * y + 0] * B[4 * 0 + x] + A[4 * y + 1] * B[4 * 1 + x] +
+                     A[4 * y + 2] * B[4 * 2 + x] + A[4 * y + 3] * B[4 * 3 + x];
+    }
   }
 }
 #endif

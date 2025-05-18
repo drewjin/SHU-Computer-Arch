@@ -1,0 +1,1 @@
+docker build --build-arg DNS=8.8.8.8 -t cuda-image .

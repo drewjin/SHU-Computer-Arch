@@ -29,20 +29,20 @@ Matrix naive_serial_matmul(const Matrix& A, const Matrix& B, size_t M,
   return C;
 }
 
-Matrix forloop_interleave_serial_matmul(const Matrix& A,
-                                        const Matrix& B, size_t M,
-                                        size_t K, size_t N) {
-  Matrix C(M * N, 0.0f); 
-  for (size_t row_a = 0; row_a < M; row_a++) {
-    for (size_t col_b = 0; col_b < N; col_b++) {
-      for (size_t col_a = 0; col_a < K; col_a++) {
-        C[row_a * N + col_b] +=
-          A[row_a * K + col_a] * B[col_a * N + col_b];
-      }
-    }
-  }
-  return C;
-}
+// Matrix forloop_interleave_serial_matmul(const Matrix& A,
+//                                         const Matrix& B, size_t M,
+//                                         size_t K, size_t N) {
+//   Matrix C(M * N, 0.0f); 
+//   for (size_t row_a = 0; row_a < M; row_a++) {
+//     for (size_t col_b = 0; col_b < N; col_b++) {
+//       for (size_t col_a = 0; col_a < K; col_a++) {
+//         C[row_a * N + col_b] +=
+//           A[row_a * K + col_a] * B[col_a * N + col_b];
+//       }
+//     }
+//   }
+//   return C;
+// }
 
 Matrix naive_parallel_matmul(const Matrix& A, const Matrix& B,
                              size_t M, size_t K, size_t N) {
