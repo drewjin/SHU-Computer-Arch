@@ -1,4 +1,5 @@
-mkdir -p build && cd build
+#!/usr/bin/zsh
+rm -rf build/
+mkdir build && cd build
 cmake ..
-make
-./matrix_mul
+make -j$(nproc)
