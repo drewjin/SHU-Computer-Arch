@@ -1,5 +1,7 @@
 CompileFlags:
     Remove:
+        - '-ccbin=/usr/bin/g++'
+        - '-allow-unsupported-compiler'
         - "--expt-extended-lambda"
         - '-gencode=arch=compute_89,code="sm_89,compute_89"'
         - "-rdc=true"
