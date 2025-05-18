@@ -16,6 +16,12 @@ services:
     ports:
       - "2222:22"
     privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '0-7'
 
   slave01:
     build: 
@@ -34,6 +40,12 @@ services:
     ports:
       - "2223:22"
     privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '8-15'
 
   slave02:
     build: 
@@ -52,6 +64,12 @@ services:
     ports:
       - "2224:22"
     privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 8G
+    cpuset: '16-23' 
 
 networks:
   drew_inner_network:

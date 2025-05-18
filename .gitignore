@@ -6,6 +6,7 @@ shared/*
 !shared/experiments
 !shared/dependency
 !shared/install-dependency.sh
+!shared/install.sh
 .dep/
 plots/
 matplotlib-cpp/
